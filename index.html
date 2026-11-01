@@ -197,6 +197,7 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 .slot .rm:hover{background:#fff}
 .slot .lbl{font-size:12px;line-height:20px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .slot.filled .lbl{color:var(--ink)}
+.slot .lbl .sh{display:none}
 .slot.pop .ph{animation:pop .35s ease-out}
 @keyframes pop{0%{transform:scale(.92)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
 .summary{display:flex;flex-direction:column;gap:4px}
@@ -222,6 +223,9 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
   .builder .intro p{font-size:14px;line-height:20px}
   .sizebtns .btn{flex:1;padding:12px 8px}
   .slots{gap:16px}
+  .slots[style*="--n:4"]{gap:12px}
+  .slots[style*="--n:4"] .lbl .lg{display:none}
+  .slots[style*="--n:4"] .lbl .sh{display:inline}
   .products{padding:0 16px 48px;gap:64px}
   .section{gap:16px}
   .banner{min-height:220px;padding:20px;gap:12px}
@@ -521,7 +525,7 @@ const money0 = n => "$" + Math.round(n);
 
 /* ---------- state ---------- */
 const fresh = () => ({
-  size:3, items:[], lastAdded:null,
+  size:4, items:[], lastAdded:null,
   cart:{bundle:false, singles:[]},
   pdpOption:"10 ml",
   form:{email:"ava.chen@email.com", news:true, delivery:"ship", country:"Canada", first:"Ava", last:"Chen", address:"120 Ossington Ave", city:"Toronto", province:"Ontario", postal:"M6J 2Z5", pay:"card", card:"4242 4242 4242 4242", exp:"12 / 28", cvc:"123", nameOnCard:"Ava Chen", billingSame:true},
@@ -636,7 +640,7 @@ function builderPanel(){
   const n=S.size, m=rewardMsg(), full=count()>=n;
   const slots = Array.from({length:n},(_,i)=>{
     const it=S.items[i];
-    if (!it) return `<div class="slot"><button type="button" class="ph" data-act="pick" aria-label="Select product for slot ${i+1}">${svg("plus")}</button><span class="lbl">Select product</span></div>`;
+    if (!it) return `<div class="slot"><button type="button" class="ph" data-act="pick" aria-label="Select product for slot ${i+1}">${svg("plus")}</button><span class="lbl"><span class="lg">Select product</span><span class="sh">Select</span></span></div>`;
     const p=P[it.id];
     return `<div class="slot filled ${S.lastAdded===it.id?"pop":""}"><div class="ph"><img src="${IMG(it.id)}" alt="${p.name}"><button type="button" class="rm" data-act="remove" data-id="${it.id}" aria-label="Remove ${p.name}">${svg("close")}</button></div><span class="lbl">${p.short}</span></div>`;
   }).join("");
@@ -981,7 +985,6 @@ function requestRemove(id){
 }
 function doRemove(id){
   S.items = S.items.filter(i=>i.id!==id); S.lastAdded=null;
-  if (S.size===4 && count()<3) S.size=3;
   if (!count()) S.cart.bundle=false;
   render(true); if (overlay) renderOverlay();
 }
@@ -1056,7 +1059,7 @@ document.addEventListener("click", e=>{
     }
     case "pick": { const firstEmpty = CATS.find(c=>c.items.some(i=>!inBundle(i))); scrollToCat(firstEmpty?firstEmpty.id:"fragrance"); break; }
     case "to-panel": { const el2=$("#builder-panel"); if(el2) el2.scrollIntoView({behavior:"smooth",block:"start"}); break; }
-    case "bestseller": S.items=BESTSELLER.map(([id,opt])=>({id,opt})); if(S.size===4) S.size=3; S.lastAdded=null; render(true); toast("Bestseller bundle added. Your free pouch is unlocked."); { const el2=$("#builder-panel"); if(el2) el2.scrollIntoView({behavior:"smooth",block:"start"}); } break;
+    case "bestseller": S.items=BESTSELLER.map(([id,opt])=>({id,opt})); S.lastAdded=null; render(true); toast("Bestseller bundle added. Your free pouch is unlocked."); { const el2=$("#builder-panel"); if(el2) el2.scrollIntoView({behavior:"smooth",block:"start"}); } break;
     case "to-review": go("review"); break;
     case "swap": { const p=P[id]; go("builder"); setTimeout(()=>scrollToCat(p.cat,true),20); toast(`Pick a product to swap in for ${p.short}, then remove it.`); break; }
     case "add-bundle": S.cart.bundle=true; render(true); openOverlay({type:"cart"}); break;
