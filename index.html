@@ -774,7 +774,7 @@ function vReview(){
       <aside class="sumbox" aria-label="Bundle summary"><h2 class="d21">Bundle summary</h2>${sumRows()}<div class="hair"></div>${rewardsList()}<div class="hair"></div>
         <div class="row big"><span class="d21">Total</span><span class="price">${money(bundleTotal())}</span></div>
         <p class="t12 muted" style="margin:0">Shipping and taxes are calculated at checkout.</p>
-        <button type="button" class="btn solid block" data-act="review-checkout">Checkout</button>
+        <button type="button" class="btn solid block" data-act="add-bundle">Continue</button>
         <button type="button" class="link" style="align-self:center" data-act="nav-builder">Edit bundle</button>
       </aside>
     </div></main></div>`;
@@ -1121,7 +1121,6 @@ document.addEventListener("click", e=>{
     case "to-review": go("review"); break;
     case "swap": { const p=P[id]; go("builder"); setTimeout(()=>scrollToCat(p.cat,true),20); toast(`Pick a product to swap in for ${p.short}, then remove it.`); break; }
     case "add-bundle": S.cart.bundle=true; render(true); openOverlay({type:"cart"}); break;
-    case "review-checkout": S.cart.bundle=true; checkoutErrors={}; S.payError=false; go("checkout"); break;
     case "pair-add": { const r=addItem(id); render(true); renderOverlay(); if(r!=="full") toast(`${P[id].name} added to your bundle.`); break; }
     case "single-to-bundle": {
       const moved=[];
