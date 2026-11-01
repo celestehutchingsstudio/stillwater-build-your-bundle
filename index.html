@@ -487,6 +487,21 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 "use strict";
 /* ---------- data (copy from Designs · Flow 1) ---------- */
 const IMG = n => "assets/" + n + ".jpg";
+const INFO = {
+  "perfume-oil":   ["10 ml or 30 ml frosted glass bottle with a black stone cap. Made in small batches in Toronto.", "Press to pulse points: wrists, the base of the throat, behind the ears. Reapply after six hours.", "Fractionated coconut oil, jojoba oil, fragrance (sea salt accord, orris, driftwood), vitamin E."],
+  "solid-perfume": ["5 g solid perfume in a hinged, hand-finished silver pebble. Refills sold separately.", "Warm the balm with a fingertip and press onto pulse points. Close the lid firmly to keep it fresh.", "Beeswax, jojoba oil, sweet almond oil, fragrance (sea salt accord, orris, driftwood), vitamin E."],
+  "jade-hour":     ["10 ml perfume oil in a hand-marbled jade glass decanter. Each stopper is carved by hand, so no two match.", "Use the glass wand to dab onto pulse points. Layer under Tide Line for a greener trail.", "Fractionated coconut oil, jojoba oil, fragrance (fig leaf, vetiver, green tea), vitamin E."],
+  "eau-de-parfum": ["50 ml eau de parfum in an engraved silver flask with a jade stopper. Refillable at the studio.", "Spray once on the chest and once on the wrists from a short distance. Don’t rub it in.", "Alcohol denat., fragrance (sea salt accord, orris, driftwood, ambrette), water."],
+  "shell-compact": ["Rose lip balm in an engraved silver shell with a pearl clasp. Silver is in stock; gold returns in spring.", "Swipe with a fingertip onto bare lips or over colour. Refill the shell with any Stillwater balm pan.", "Shea butter, beeswax, castor oil, rose otto, vitamin E."],
+  "hand-cream":    ["50 ml hand cream in a brushed aluminium tube. The tube softens and creases as you use it.", "Massage a pea-sized amount into hands and cuticles. Absorbs in under a minute.", "Water, shea butter, glycerin, sea fennel extract, sea salt, fragrance (sea salt accord, iris)."],
+  "body-wash":     ["200 ml body wash from Bare Earth, in a pressed-paper box with a refillable bottle.", "Lather between wet hands or on a cloth, then rinse. Gentle enough for daily use.", "Water, coco-glucoside, glycerin, pine needle oil, kaolin clay, magnesium sulfate."],
+  "sea-rose":      ["10 ml lip oil in a glass vial with a steel rollerball and a brass cap.", "Roll across lips on its own or over balm for shine. Wipe the rollerball after use.", "Rosehip seed oil, jojoba oil, sea rose extract, vitamin E."],
+  "fish-comb":     ["A sardine cast in solid brass, about 15 cm long. It darkens with use; polish with a soft cloth to bring back the shine.", "Fine teeth for beards, short hair and bobs. Rinse in warm water and dry right away.", "Solid brass."],
+  "jasper-lighter":["A refillable butane lighter cased in red jasper with an aged brass band. Each stone is cut by hand, so the pattern varies.", "Refill with standard butane through the valve underneath. Ships empty.", "Red jasper, brass, steel mechanism."],
+  "candle":        ["300 g candle in a hand-thrown stoneware vessel. Burns for about 45 hours.", "Trim the wick to 5 mm before each burn. Burn for up to three hours at a time.", "Coconut and soy wax, cotton wick, fragrance (sea salt accord, iris, driftwood)."],
+  "crab":          ["A gilded brass crab about 12 cm across. Heavy enough to hold down letters on a windy desk.", "Wipe with a dry cloth. Avoid polishes, which lift the gilding.", "Brass with gold gilding."],
+  "pouch":         ["Waxed linen pouch with a brass kiss clasp, 14 × 11 cm. Free with any bundle of 3.", "Holds a lip balm, solid perfume and a few cards. Spot clean only.", "Waxed linen, cotton lining, brass frame."]
+};
 const P = {
   "perfume-oil":   {name:"Tide Line Perfume Oil", short:"Perfume Oil", line:"Tide Line", desc:"Sea salt, iris and driftwood", long:"Our Tide Line scent as a skin-close perfume oil, poured into frosted glass and capped in black stone. Sea salt, iris and driftwood.", price:145, cat:"fragrance", tag:"Bestseller", options:["10 ml","30 ml"]},
   "solid-perfume": {name:"Tide Line Solid Perfume", short:"Solid Perfume", line:"Tide Line", desc:"Tide Line in a silver pebble", long:"Tide Line pressed into a balm and set in a hinged silver pebble. Made for a coat pocket.", price:95, cat:"fragrance", options:["5 g"]},
@@ -866,6 +881,7 @@ function quickView(id, opt){
         ${p.stock?`<div class="stock">${svg("alert")}<span>${p.stock}</span></div>`:""}
         ${p.alts?`<div class="alts"><p class="eyebrow">Or try these instead</p>${p.alts.map(a=>`<div class="alt"><img src="${IMG(a)}" alt=""><div class="t"><span class="t14">${P[a].name}</span><span class="t12 muted">${money0(P[a].price)}${P[a].vendor?" · "+P[a].vendor:""}</span></div><button type="button" data-act="swap-in" data-id="${a}">${inBundle(a)?"In your bundle":"Swap in"}</button></div>`).join("")}</div>`:""}
         <button type="button" class="btn solid block" data-act="qv-add" data-id="${id}" data-opt="${sel}" ${sold?"disabled":""}>${sold?"Sold out":added?"Update bundle":"Add to bundle"}</button>
+        <div class="acc">${["Details","How to use","Ingredients"].map((t,i)=>`<details><summary>${t} ${svg("plus")}</summary><p>${INFO[id][i]}</p></details>`).join("")}</div>
       </div></div></div>`;
 }
 function cartDrawer(){
