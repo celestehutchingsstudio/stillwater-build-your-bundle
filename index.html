@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Stillwater Build Your Bundle</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: prototype controls on top, then the storefront inside a device frame (full width on desktop, a 390px phone on "Mobile").
+   The storefront lays itself out with container queries, so the phone frame and a real phone get the same mobile layout.
+   Tokens come from the Stillwater style sheet in Figma: one warm light palette, Cormorant Garamond for display, Inter for UI. */
+:root{
+  --paper:#f6f2ec; --sand:#ede5da; --line:#cfc3b3; --ink:#141414; --muted:#6e655c; --moss:#3f5a45; --rust:#9a3b2e;
+  --on-ink:#ffffff; --scrim:rgba(20,20,20,.48); --shell:#e4ddd2; --shell-fg:#141414; --ring:#3f5a45;
+  --shop:#5a31f4; --paypal:#ffc439;
+  --display:"Cormorant Garamond","Cormorant",Garamond,"Times New Roman",serif;
+  --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--shell);color:var(--ink);font-family:var(--ui);font-size:14px;line-height:1.43;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:90;background:var(--shell)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+img{display:block;max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- prototype controls ---------- */
+.ctl{flex:none;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding-block:10px;padding-top:calc(10px + env(safe-area-inset-top,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--shell);color:var(--shell-fg);border-bottom:1px solid var(--line);z-index:80}
+.ctl-name{font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.ctl-name span{color:var(--muted);font-weight:500}
+.seg{display:inline-flex;border:1px solid var(--ink)}
+.seg button{padding:6px 12px;font-size:12px;font-weight:500;min-height:32px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+.ctl select{background:var(--paper);border:1px solid var(--ink);border-radius:0;padding:6px 8px;font-size:12px;min-height:32px;max-width:100%}
+.ctl .ghost{font-size:12px;font-weight:500;text-decoration:underline;text-underline-offset:3px;min-height:32px;padding:0 4px}
+.ctl .spacer{flex:1}
+@media (max-width:560px){.ctl-name span{display:none}.ctl .spacer{display:none}}
+
+/* ---------- device ---------- */
+.stage{flex:1;min-height:0;display:flex;justify-content:center;align-items:stretch;overflow:hidden}
+.device{position:relative;flex:1;min-width:0;background:var(--paper);transform:translateZ(0);overflow:hidden;display:flex;container-type:inline-size;container-name:app}
+body.phone .stage{padding:20px 16px;align-items:center}
+body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);border:10px solid var(--ink);border-radius:44px;box-shadow:0 24px 60px rgba(20,20,20,.25)}
+.scroller{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;overscroll-behavior:contain}
+
+/* ---------- type ---------- */
+.d40{font-family:var(--display);font-weight:500;font-size:40px;line-height:44px;margin:0;text-wrap:balance}
+.d30{font-family:var(--display);font-weight:500;font-size:30px;line-height:36px;margin:0;text-wrap:balance}
+.d24{font-family:var(--display);font-weight:500;font-size:24px;line-height:32px;margin:0}
+.d21{font-family:var(--display);font-weight:500;font-size:21px;line-height:28px;margin:0}
+.d18{font-family:var(--display);font-weight:500;font-size:18px;line-height:24px;margin:0}
+.eyebrow{font-size:11px;line-height:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0}
+.muted{color:var(--muted)}
+.t12{font-size:12px;line-height:20px}
+.t14{font-size:14px;line-height:20px}
+.price{font-size:20px;line-height:28px;font-weight:500;font-variant-numeric:tabular-nums}
+.num{font-variant-numeric:tabular-nums}
+.link{font-size:12px;line-height:16px;text-decoration:underline;text-underline-offset:3px;min-height:24px;display:inline-flex;align-items:center}
+.link:hover{color:var(--muted)}
+
+/* ---------- buttons, tags ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;font-size:12px;line-height:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink);background:transparent;color:var(--ink);transition:background .15s,color .15s;text-align:center}
+.btn:hover{background:var(--sand)}
+.btn.solid{background:var(--ink);color:var(--on-ink)}
+.btn.solid:hover{background:#2c2a27}
+.btn.cream{background:var(--paper);border-color:var(--paper)}
+.btn.cream:hover{background:var(--sand)}
+.btn.block{width:100%}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn svg{width:14px;height:14px;flex:none}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;font-size:11px;line-height:16px;font-weight:500;letter-spacing:.04em;background:var(--sand);color:var(--ink);white-space:nowrap}
+.tag.ok{background:transparent;border:1px solid var(--moss);color:var(--moss);padding:3px 7px}
+.tag.lost{background:transparent;border:1px solid var(--rust);color:var(--rust);padding:3px 7px}
+.ic{width:16px;height:16px;flex:none;display:block}
+
+/* ---------- header ---------- */
+.announce{background:var(--ink);color:#fff;font-size:11px;line-height:16px;font-weight:500;letter-spacing:.04em;text-align:center;padding:10px 16px}
+.bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:76px;padding:0 48px;border-bottom:1px solid var(--line)}
+.bar nav{display:flex;gap:28px;font-size:12px}
+.bar nav button,.bar .util button{font-size:12px;line-height:16px;min-height:32px}
+.bar nav button:hover,.bar .util button:hover{text-decoration:underline;text-underline-offset:4px}
+.bar nav button[aria-current="page"]{text-decoration:underline;text-underline-offset:4px}
+.logo{font-family:var(--display);font-weight:500;font-size:30px;letter-spacing:.12em;line-height:36px}
+.bar .util{display:flex;gap:28px;justify-content:flex-end}
+.bar .menu{display:none}
+@container app (max-width:760px){
+  .announce{padding:10px 16px}
+  .bar{height:52px;padding:0 16px;grid-template-columns:40px 1fr 40px}
+  .bar nav,.bar .util .wide{display:none}
+  .bar .menu{display:inline-flex;min-height:40px;min-width:40px;align-items:center}
+  .logo{font-size:24px;line-height:28px;text-align:center}
+  .bar .util{gap:0}
+}
+
+/* ---------- page shells ---------- */
+.page{min-height:100%}
+.pad{padding:32px 48px 48px}
+@container app (max-width:760px){.pad{padding:20px 20px 40px}}
+
+/* ---------- product page ---------- */
+.pdp{display:grid;grid-template-columns:minmax(0,760fr) minmax(0,520fr);gap:64px;align-items:start}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gallery img{width:100%;aspect-ratio:372/440;object-fit:cover;background:var(--sand)}
+.info{display:flex;flex-direction:column;gap:20px;padding-top:8px;position:sticky;top:24px}
+.rating{display:flex;gap:8px;font-size:12px;line-height:20px}
+.sizes{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-height:40px;padding:10px 20px;font-size:12px;line-height:16px;font-weight:500;border:1px solid var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff}
+.chip.sold{border-color:var(--line);color:var(--muted);text-decoration:line-through}
+.chip.sold[aria-pressed="true"]{background:var(--line);color:var(--ink)}
+.promo-card{background:var(--sand);padding:28px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.tiers{display:flex;gap:8px;flex-wrap:wrap}
+.tiers .tag{background:var(--paper)}
+.acc{border-top:1px solid var(--line)}
+.acc details{border-bottom:1px solid var(--line)}
+.acc summary{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:16px 0;font-size:12px;line-height:16px;cursor:pointer;min-height:48px}
+.acc summary::-webkit-details-marker{display:none}
+.acc details[open] summary .ic{transform:rotate(45deg)}
+.acc summary .ic{transition:transform .2s}
+.acc p{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:20px;max-width:60ch}
+.mgallery{display:none}
+@container app (max-width:900px){
+  .pdp{grid-template-columns:1fr;gap:24px}
+  .info{position:static}
+}
+@container app (max-width:760px){
+  .pdp{margin:-20px -20px 0}
+  .gallery{display:none}
+  .mgallery{display:block;position:relative}
+  .mgallery .track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .mgallery .track::-webkit-scrollbar{display:none}
+  .mgallery img{flex:none;width:100%;aspect-ratio:390/440;object-fit:cover;scroll-snap-align:start}
+  .dots{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:8px}
+  .dots i{width:4px;height:4px;background:rgba(255,255,255,.6);display:block;transition:width .2s}
+  .dots i.on{width:16px;background:#fff}
+  .info{padding:4px 20px 0;gap:16px}
+  .info .d40{font-size:30px;line-height:36px}
+  .info .btn.block{width:100%}
+  .promo-card{padding:20px}
+  .promo-card .btn{width:100%}
+}
+
+/* ---------- builder ---------- */
+.builder-page{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:48px;padding:0 48px;align-items:start}
+.products{display:flex;flex-direction:column;gap:80px;padding:48px 0 64px;min-width:0}
+.section{display:flex;flex-direction:column;gap:24px;scroll-margin-top:24px}
+.banner{position:relative;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end;gap:16px;padding:32px;color:#fff;background:var(--muted) center/cover no-repeat;isolation:isolate}
+.banner::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,20,20,.18) 0%,rgba(20,20,20,.6) 100%);z-index:-1}
+.banner h2,.banner p{text-shadow:0 1px 12px rgba(20,20,20,.45)}
+.banner p{margin:0;font-size:16px;line-height:24px;max-width:60ch}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px 20px}
+.tile{display:flex;flex-direction:column;gap:16px;min-width:0}
+.tile .imgbtn{position:relative;display:block;aspect-ratio:1;overflow:hidden;background:var(--sand);width:100%}
+.tile .imgbtn img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.tile .imgbtn:hover img{transform:scale(1.04)}
+.tile .imgbtn .tag{position:absolute;left:0;top:0}
+.tile .imgbtn .qv{position:absolute;left:8px;right:8px;bottom:8px;background:rgba(246,242,236,.94);font-size:11px;line-height:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:8px;opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s}
+.tile .imgbtn:hover .qv,.tile .imgbtn:focus-visible .qv{opacity:1;transform:none}
+.tile .namebtn{text-align:left;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .namebtn .d18{white-space:nowrap;overflow:hidden;text-overflow:clip}
+.tile .namebtn:hover .d18{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.tile .btn{padding:12px 8px;letter-spacing:.04em}
+.tile .btn.added{background:var(--ink);color:#fff}
+.side{position:sticky;top:0;padding:48px 32px;display:flex;flex-direction:column;gap:48px;min-width:0}
+.builder{display:flex;flex-direction:column;gap:24px}
+.builder .intro{display:flex;flex-direction:column;gap:8px}
+.builder .intro p{margin:0;font-size:17px;line-height:24px}
+.sizebtns{display:flex;gap:12px;flex-wrap:wrap}
+.sizebtns .btn{padding:12px 24px}
+.sizebtns .btn[aria-pressed="true"]{background:var(--ink);color:#fff}
+.slots{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:20px}
+.slot{display:flex;flex-direction:column;gap:8px;min-width:0}
+.slot .ph{position:relative;aspect-ratio:1;border:1px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);width:100%;background:transparent}
+.slot .ph:hover{background:var(--sand)}
+.slot.filled .ph{border:1px solid var(--line);background:var(--sand);overflow:hidden}
+.slot.filled .ph img{width:100%;height:100%;object-fit:cover}
+.slot .rm{position:absolute;top:6px;right:6px;width:28px;height:28px;background:var(--paper);display:flex;align-items:center;justify-content:center;border:1px solid var(--line)}
+.slot .rm:hover{background:#fff}
+.slot .lbl{font-size:12px;line-height:20px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot.filled .lbl{color:var(--ink)}
+.slot.pop .ph{animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.92)}60%{transform:scale(1.03)}100%{transform:scale(1)}}
+.summary{display:flex;flex-direction:column;gap:4px}
+.summary .msg{font-size:12px;line-height:20px;color:var(--muted)}
+.summary .msg.ok{color:var(--moss)}
+.promo{position:relative;padding:32px;color:#fff;display:flex;flex-direction:column;gap:16px;align-items:flex-start;isolation:isolate;background:var(--muted) center/cover}
+.promo::before{content:"";position:absolute;inset:0;background:rgba(20,20,20,.52);z-index:-1}
+.promo p{margin:0;font-size:16px;line-height:24px}
+.mobile-bar{display:none}
+@container app (max-width:1180px){
+  .builder-page{grid-template-columns:minmax(0,1fr) 400px;gap:32px;padding:0 32px}
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .side{padding:40px 0}
+}
+@container app (max-width:900px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .builder-page{grid-template-columns:minmax(0,1fr) 340px}
+  .slots{gap:12px}
+}
+@container app (max-width:760px){
+  .builder-page{display:flex;flex-direction:column-reverse;padding:0;gap:0}
+  .side{position:static;padding:32px 16px;gap:24px}
+  .builder .intro p{font-size:14px;line-height:20px}
+  .sizebtns .btn{flex:1;padding:12px 8px}
+  .slots{gap:16px}
+  .products{padding:0 16px 48px;gap:64px}
+  .section{gap:16px}
+  .banner{min-height:220px;padding:20px;gap:12px}
+  .banner h2{font-size:30px;line-height:36px}
+  .banner p{font-size:14px;line-height:20px}
+  .grid{gap:32px 12px}
+  .tile .imgbtn .qv{display:none}
+  .promo{padding:28px 16px}
+  .promo .d30{font-size:30px}
+  .promo p{font-size:14px;line-height:20px}
+  .mobile-bar{position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .25s}
+  .mobile-bar.show{transform:none}
+  .mobile-bar .mb-text{flex:1;min-width:0;display:flex;flex-direction:column}
+  .mobile-bar .btn{min-height:44px;padding:10px 16px}
+}
+
+/* ---------- review ---------- */
+.back{display:inline-flex;align-items:center;gap:8px;font-size:12px;line-height:16px;min-height:32px}
+.back:hover{text-decoration:underline;text-underline-offset:3px}
+.cols{display:grid;grid-template-columns:minmax(0,840fr) minmax(0,440fr);gap:64px;align-items:start;margin-top:24px}
+.bundle-col{display:flex;flex-direction:column;gap:24px;min-width:0}
+.rewards{display:flex;flex-direction:column;gap:12px}
+.rewards .msgrow{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.track{height:4px;background:var(--line);position:relative;overflow:hidden}
+.track i{position:absolute;inset:0 auto 0 0;background:var(--moss);transition:width .35s}
+.tierrow{display:grid;grid-template-columns:repeat(var(--n,4),1fr)}
+.tierrow span{display:flex;gap:8px;align-items:center;font-size:11px;line-height:16px;font-weight:500;color:var(--muted);justify-content:flex-end}
+.tierrow span.on{color:var(--moss)}
+.lines{display:flex;flex-direction:column;gap:16px}
+.line{display:flex;gap:16px;align-items:flex-start}
+.line img{width:72px;height:88px;object-fit:cover;flex:none;background:var(--sand)}
+.line .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.line .acts{display:flex;gap:16px;padding-top:4px}
+.line .acts button{font-size:11px;line-height:16px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;min-height:24px}
+.sumbox{background:var(--sand);padding:32px;display:flex;flex-direction:column;gap:16px;position:sticky;top:24px}
+.row{display:flex;justify-content:space-between;gap:16px;font-size:14px;line-height:20px;font-variant-numeric:tabular-nums}
+.row.big{align-items:baseline}
+.hair{height:1px;background:var(--line)}
+.rw{display:flex;gap:12px;align-items:center;font-size:14px;line-height:20px}
+.rw span:nth-child(2){flex:1}
+.rw .v{color:var(--moss);font-variant-numeric:tabular-nums}
+.ok-label{color:var(--moss)}
+.center{text-align:center}
+.empty{border:1px dashed var(--line);padding:32px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+@container app (max-width:900px){.cols{grid-template-columns:1fr;gap:32px}.sumbox{position:static}}
+@container app (max-width:760px){.cols{margin-top:20px}.sumbox{padding:20px}.tierrow{display:flex;justify-content:flex-end;gap:16px}.tierrow span:empty{display:none}}
+
+/* ---------- overlays ---------- */
+.ov{position:fixed;inset:0;z-index:50;display:flex}
+.ov .scrim{position:absolute;inset:0;background:var(--scrim);animation:fade .2s}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+@keyframes slide{from{transform:translateX(100%)}}
+@keyframes sheet{from{transform:translateY(100%)}}
+.modal{position:relative;margin:auto;width:min(1200px,calc(100% - 64px));max-height:calc(100% - 64px);background:var(--paper);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);overflow:hidden;animation:up .25s ease-out}
+.modal .mimg{background:var(--sand);min-height:0}
+.modal .mimg img{width:100%;height:100%;object-fit:cover;max-height:calc(100vh - 64px)}
+.modal .mbody{padding:40px;display:flex;flex-direction:column;gap:20px;overflow-y:auto;min-width:0}
+.xbtn{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;flex:none;margin:-10px -10px 0 0}
+.xbtn:hover{background:var(--sand)}
+.mhead{display:flex;gap:12px;align-items:flex-start}
+.mhead>div{flex:1;display:flex;flex-direction:column;gap:4px}
+.stock{display:flex;gap:8px;align-items:center;font-size:12px;line-height:20px;color:var(--rust)}
+.alts{display:flex;flex-direction:column;gap:12px;padding-top:4px}
+.alt{display:flex;gap:12px;align-items:center}
+.alt img{width:48px;height:56px;object-fit:cover;flex:none}
+.alt .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.alt button{font-size:12px;line-height:16px;text-decoration:underline;text-underline-offset:3px;min-height:32px}
+.grabber{display:none}
+@container app (max-width:760px){
+  .ov.qv{align-items:flex-end}
+  .modal{width:100%;max-height:calc(100% - 84px);margin:0;grid-template-columns:1fr;overflow-y:auto;animation:sheet .28s ease-out;padding:12px 20px calc(32px + env(safe-area-inset-bottom,0px))}
+  .grabber{display:block;width:40px;height:4px;background:var(--line);margin:0 auto 12px}
+  .modal .mimg{height:240px;flex:none}
+  .modal .mimg img{max-height:240px}
+  .modal .mbody{padding:12px 0 0;gap:12px;overflow:visible}
+  .modal .d40{font-size:21px;line-height:28px;font-family:var(--display)}
+  .modal .price{font-size:14px;line-height:20px;font-weight:400}
+}
+.drawer{position:relative;margin-left:auto;width:480px;max-width:100%;height:100%;background:var(--paper);display:flex;flex-direction:column;animation:slide .28s ease-out;box-shadow:-12px 0 40px rgba(20,20,20,.12)}
+.dhead{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--line)}
+.dhead .xbtn{margin:-10px}
+.ship{background:var(--sand);padding:16px 24px;display:flex;flex-direction:column;gap:8px}
+.ship .msg{display:flex;gap:8px;align-items:center;font-size:12px;line-height:20px;color:var(--moss)}
+.dbody{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+.bline{display:flex;gap:16px}
+.bline img{width:88px;height:104px;object-fit:cover;flex:none}
+.bline .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.bline .tr{display:flex;justify-content:space-between;gap:16px}
+.bitems{border:1px solid var(--line)}
+.bitem{display:flex;gap:12px;align-items:center;padding:8px 16px 8px 16px}
+.bitem+.bitem{border-top:1px solid var(--line)}
+.bitem img{width:48px;height:48px;object-fit:cover;flex:none}
+.bitem .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.bitem .t b{font-weight:400;font-size:14px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bitem button{font-size:12px;line-height:16px;text-decoration:underline;text-underline-offset:3px;min-height:32px}
+.gwp{border:1px solid var(--line);display:flex;gap:12px;align-items:center;padding:12px 16px}
+.gwp img{width:48px;height:48px;object-fit:cover}
+.gwp .t{flex:1;display:flex;flex-direction:column}
+.pairs{display:flex;flex-direction:column;gap:12px;padding-top:8px}
+.pairs .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pcard{display:flex;gap:12px;min-width:0}
+.pcard img{width:72px;height:72px;object-fit:cover;flex:none}
+.pcard .t{display:flex;flex-direction:column;gap:4px;min-width:0;align-items:flex-start}
+.pcard button{font-size:12px;line-height:16px;text-decoration:underline;text-underline-offset:3px;min-height:24px}
+.dfoot{border-top:1px solid var(--line);padding:20px 24px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+@container app (max-width:760px){
+  .drawer{width:100%;box-shadow:none}
+  .dhead{padding:20px 16px}.ship{padding:16px}.dbody{padding:24px 16px}.dfoot{padding:20px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .pairs .cards{grid-template-columns:1fr}
+}
+.ov.warn{z-index:60}
+.dialog{position:relative;margin:auto;width:420px;max-width:calc(100% - 32px);background:var(--paper);padding:32px;display:flex;flex-direction:column;gap:16px;animation:up .2s ease-out}
+.dialog .head{display:flex;gap:12px;align-items:flex-start}
+.dialog .head h2{flex:1}
+.dialog .acts{display:flex;gap:12px}
+.dialog .acts .btn{flex:1;padding:12px 16px}
+@container app (max-width:760px){
+  .ov.warn{align-items:flex-end}
+  .dialog{width:100%;max-width:100%;margin:0;padding:24px 20px calc(32px + env(safe-area-inset-bottom,0px));animation:sheet .25s ease-out}
+  .dialog .acts{flex-direction:column-reverse}
+}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;font-size:13px;line-height:20px;padding:12px 16px;max-width:calc(100% - 32px);width:max-content;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- checkout ---------- */
+.co-head{display:flex;align-items:center;justify-content:space-between;padding:24px 160px;border-bottom:1px solid var(--line)}
+.co-head .logo{font-size:26px;line-height:32px}
+.co-head button{min-height:40px;min-width:40px;display:inline-flex;align-items:center;justify-content:center}
+.co{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100% - 81px)}
+.co-main{padding:48px 40px 48px 160px;display:flex;flex-direction:column;gap:32px;align-items:flex-end}
+.co-main>*{width:100%;max-width:520px}
+.co-side{background:var(--sand);border-left:1px solid var(--line);padding:48px 160px 40px 40px}
+.co-side>div{max-width:520px;position:sticky;top:48px;display:flex;flex-direction:column;gap:24px}
+.express{display:flex;flex-direction:column;gap:12px}
+.express .btns{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.express .btns button{height:48px;font-weight:700;font-size:16px;border-radius:4px}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.fs{display:flex;flex-direction:column;gap:16px;border:0;margin:0;padding:0;min-width:0}
+.fs legend{padding:0;margin-bottom:16px;width:100%;display:flex;justify-content:space-between;align-items:baseline}
+.fs legend+*{margin-top:0}
+.field{position:relative;display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{position:absolute;left:13px;top:6px;font-size:12px;line-height:20px;color:var(--muted);pointer-events:none}
+.field input,.field select{height:52px;border:1px solid var(--line);background:var(--paper);padding:24px 12px 6px;font-size:14px;line-height:20px;width:100%;border-radius:0;appearance:none}
+.field select{padding-right:36px}
+.field .chev{position:absolute;right:12px;top:18px;pointer-events:none}
+.field .trail{position:absolute;right:12px;top:18px;color:var(--muted)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.field.bad input{border-color:var(--rust);box-shadow:0 0 0 1px var(--rust)}
+.ferr{display:flex;gap:8px;align-items:center;font-size:12px;line-height:20px;color:var(--rust)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.frow.three{grid-template-columns:1fr 1fr 1fr}
+.check{display:flex;gap:12px;align-items:center;font-size:14px;line-height:20px;cursor:pointer;min-height:24px}
+.check input{appearance:none;width:16px;height:16px;border:1px solid var(--ink);background:var(--paper);margin:0;display:grid;place-content:center;flex:none}
+.check input:checked{background:var(--ink)}
+.check input:checked::after{content:"";width:8px;height:5px;border:solid #fff;border-width:0 0 2px 2px;transform:translateY(-1px) rotate(-45deg)}
+.opts{border:1px solid var(--line)}
+.opt{display:flex;gap:12px;align-items:center;padding:16px;cursor:pointer;border:1px solid transparent;margin:-1px}
+.opt+.opt,.opt+.panel,.panel+.opt{border-top-color:var(--line)}
+.opt:has(input:checked){background:var(--sand);border-color:var(--ink);position:relative;z-index:1}
+.opt input{appearance:none;width:16px;height:16px;border:1px solid var(--line);border-radius:50%;background:var(--paper);margin:0;flex:none}
+.opt input:checked{border:5px solid var(--ink)}
+.opt .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.brands{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.brand{font-size:10px;line-height:16px;font-weight:700;padding:3px 7px;border:1px solid var(--line);background:var(--paper)}
+.panel{background:var(--sand);border-top:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px}
+.pay-err{display:flex;gap:12px;padding:16px;border:1px solid var(--rust);background:var(--sand)}
+.pay-err b{display:block;color:var(--rust);font-weight:500;font-size:14px;line-height:20px}
+.pay-err p{margin:4px 0 0;color:var(--moss);font-size:14px;line-height:20px}
+.paybtn{height:56px;background:var(--ink);color:var(--paper);font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;width:100%}
+.paybtn:hover{background:#2c2a27}
+.paybtn[aria-busy="true"]{opacity:.7;cursor:progress}
+.policies{display:flex;flex-wrap:wrap;gap:8px 16px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;line-height:20px}
+.policies button{text-decoration:underline;text-underline-offset:3px;font-size:12px}
+.oline{display:flex;gap:16px;align-items:flex-start}
+.thumb{position:relative;width:64px;height:64px;flex:none;border:1px solid var(--line);background:var(--paper)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb .q{position:absolute;top:-10px;right:-10px;min-width:20px;height:20px;padding:0 6px;background:var(--muted);color:var(--paper);border-radius:10px;font-size:12px;line-height:20px;font-weight:500;text-align:center}
+.oline .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.note{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);background:var(--paper);font-size:12px;line-height:20px}
+.disc{display:flex;gap:12px}
+.disc .field{flex:1}
+.disc .btn{min-height:52px;background:var(--line);border-color:var(--line);color:var(--muted)}
+.disc .btn.ready{background:var(--ink);border-color:var(--ink);color:#fff}
+.totals{display:flex;flex-direction:column;gap:8px}
+.grand{display:flex;align-items:baseline;gap:8px}
+.grand .d24{flex:1;font-size:26px}
+.co-mtoggle{display:none}
+@container app (max-width:1180px){.co-head{padding:24px 40px}.co-main{padding:48px 40px}.co-side{padding:48px 40px}}
+@container app (max-width:900px){
+  .co{grid-template-columns:1fr;display:flex;flex-direction:column}
+  .co-side{order:-1;border-left:0;border-bottom:1px solid var(--line);padding:0}
+  .co.done .co-side{order:1;border-bottom:0;border-top:1px solid var(--line);padding-top:24px}
+  .co-side>div{position:static;max-width:none;padding:0 20px 24px}
+  .co-side>div[data-collapsed="true"]{display:none}
+  .co-mtoggle{display:flex;width:100%;justify-content:space-between;align-items:center;padding:16px 20px;font-size:14px;line-height:20px;min-height:56px}
+  .co-mtoggle span:first-child{display:flex;gap:8px;align-items:center;text-decoration:underline;text-underline-offset:3px}
+  .co-main{padding:32px 20px 48px;align-items:stretch}
+  .co-main>*{max-width:none}
+  .co-head{padding:16px 20px}
+}
+@container app (max-width:520px){
+  .frow.three{grid-template-columns:1fr 1fr}
+  .frow.three .field:first-child{grid-column:1/-1}
+  .express .btns{grid-template-columns:1fr}
+}
+
+/* ---------- confirmation ---------- */
+.thanks{display:flex;gap:16px;align-items:center}
+.thanks .ck{width:48px;height:48px;border:1px solid var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+.box{border:1px solid var(--line);padding:20px;display:flex;flex-direction:column;gap:12px}
+.box p{margin:0}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.dgrid div{display:flex;flex-direction:column;gap:4px;min-width:0;overflow-wrap:anywhere}
+.dgrid b{font-weight:500}
+.factions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.factions .help{flex:1}
+@container app (max-width:520px){.dgrid{grid-template-columns:1fr}.factions .btn{width:100%}}
+</style>
+</head>
+<body>
+<header class="ctl" aria-label="Prototype controls">
+  <span class="ctl-name">Stillwater <span>· Build your bundle · Flow 1</span></span>
+  <div class="seg" role="group" aria-label="Device">
+    <button type="button" id="dev-desktop" aria-pressed="true">Desktop</button>
+    <button type="button" id="dev-mobile" aria-pressed="false">Mobile</button>
+  </div>
+  <label class="sr" for="jump">Jump to screen</label>
+  <select id="jump">
+    <option value="">Jump to screen…</option>
+    <option value="1">1 · Product page</option>
+    <option value="2">2 · Open the builder</option>
+    <option value="3">3 · Quick view a product</option>
+    <option value="4">4 · Unlock the first reward</option>
+    <option value="5">5 · Review the bundle</option>
+    <option value="6">6 · Cart drawer</option>
+    <option value="7">7 · Checkout</option>
+    <option value="8">8 · Confirmation</option>
+  </select>
+  <span class="spacer"></span>
+  <button type="button" class="ghost" id="restart">Restart</button>
+</header>
+<div class="stage">
+  <div class="device" id="device">
+    <div class="scroller" id="scroller"><div id="app"></div></div>
+    <div id="overlays"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- data (copy from Designs · Flow 1) ---------- */
+const IMG = n => "assets/" + n + ".jpg";
+const P = {
+  "perfume-oil":   {name:"Tide Line Perfume Oil", short:"Perfume Oil", line:"Tide Line", desc:"Sea salt, iris and driftwood", long:"Our Tide Line scent as a skin-close perfume oil, poured into frosted glass and capped in black stone. Sea salt, iris and driftwood.", price:145, cat:"fragrance", tag:"Bestseller", options:["10 ml","30 ml"]},
+  "solid-perfume": {name:"Tide Line Solid Perfume", short:"Solid Perfume", line:"Tide Line", desc:"Tide Line in a silver pebble", long:"Tide Line pressed into a balm and set in a hinged silver pebble. Made for a coat pocket.", price:95, cat:"fragrance", options:["5 g"]},
+  "jade-hour":     {name:"Jade Hour Perfume Oil", short:"Jade Hour", line:"Stillwater", desc:"Fig leaf and vetiver", long:"Fig leaf, vetiver and green tea in a hand-marbled jade glass decanter with a carved stopper.", price:165, cat:"fragrance", tag:"New", options:["10 ml"]},
+  "eau-de-parfum": {name:"Tide Line Eau de Parfum", short:"Eau de Parfum", line:"Tide Line", desc:"Engraved silver flask", long:"The full Tide Line scent in an engraved silver flask with a jade stopper. Refillable.", price:285, cat:"fragrance", tag:"New", options:["50 ml"]},
+  "shell-compact": {name:"Tide Line Shell Compact Lip Balm", tile:"Shell Compact Lip Balm", short:"Lip Balm", line:"Tide Line", desc:"Rose balm in a silver shell", long:"Rose balm in an engraved silver shell with a pearl clasp. Fits in the palm.", price:120, cat:"skin", options:["Silver","Gold"], soldOut:["Gold"], stock:"Gold is sold out. Only 2 left in silver.", alts:["body-wash","fish-comb"]},
+  "hand-cream":    {name:"Tide Line Hand Cream", short:"Hand Cream", line:"Tide Line", desc:"Sea salt and iris", long:"A rich hand cream with sea fennel and salt, in a brushed aluminium tube that softens as you use it.", price:65, cat:"skin", options:["50 ml"]},
+  "body-wash":     {name:"Bare Earth Body Wash", short:"Body Wash", line:"Bare Earth", desc:"Pine and mineral wash", long:"A gentle pine and mineral body wash from our friends at Bare Earth, in a pressed-paper box.", price:58, cat:"skin", options:["200 ml"], vendor:"Bare Earth"},
+  "sea-rose":      {name:"Sea Rose Lip Oil", short:"Lip Oil", line:"Stillwater", desc:"Rosehip on a rollerball", long:"Rosehip and sea rose oil on a steel rollerball, in a glass vial with a brass cap.", price:48, cat:"skin", tag:"New", options:["10 ml"]},
+  "fish-comb":     {name:"The Brass Fish Comb", short:"Fish Comb", line:"Stillwater", desc:"A sardine in solid brass", long:"A sardine cast in solid brass, with teeth fine enough for a beard or a bob. It darkens with use.", price:95, cat:"acc", options:["Solid brass"]},
+  "jasper-lighter":{name:"The Jasper Lighter", short:"Jasper Lighter", line:"Stillwater", desc:"Red jasper and brass", long:"A refillable lighter cased in red jasper with an aged brass band. Every stone is different.", price:240, cat:"acc", options:["Red jasper"]},
+  "candle":        {name:"Tide Line Candle", short:"Candle", line:"Tide Line", desc:"Stoneware, 45 hours", long:"Tide Line poured into a hand-thrown stoneware vessel. Burns for about 45 hours.", price:110, cat:"acc", options:["300 g"]},
+  "crab":          {name:"The Golden Crab Paperweight", tile:"Gold Crab Paperweight", short:"Gold Crab", line:"Stillwater", desc:"Gilded brass crab", long:"A gilded brass crab, heavy enough to hold down letters on a windy desk.", price:320, cat:"acc", options:["Gilded brass"]},
+  "pouch":         {name:"The Stillwater Pouch", short:"Pouch", line:"Stillwater", desc:"Waxed linen, brass clasp", long:"Waxed linen with a brass kiss clasp. Free with any bundle of 3.", price:85, cat:"acc", options:["Sage linen"]}
+};
+const CATS = [
+  {id:"fragrance", name:"Fragrance", sub:"Tide Line and the scents around it, in sea glass, jade and silver.", img:"banner-fragrance", items:["perfume-oil","solid-perfume","jade-hour","eau-de-parfum"]},
+  {id:"skin", name:"Skin and lip care", sub:"Balms, creams and washes in silver, shell and pressed paper.", img:"banner-skin", items:["shell-compact","hand-cream","body-wash","sea-rose"]},
+  {id:"acc", name:"Accessories", sub:"Small objects in brass, stone and linen, made to be kept.", img:"banner-accessories", items:["fish-comb","jasper-lighter","candle","crab","pouch"]}
+];
+const BESTSELLER = [["perfume-oil","10 ml"],["shell-compact","Silver"],["solid-perfume","5 g"]];
+const TAX = 0.13, FREE_SHIP = 150;
+
+/* ---------- icons ---------- */
+const ic = {
+  plus:'<path d="M8 2v12M2 8h12"/>', close:'<path d="M3 3l10 10M13 3L3 13"/>', check:'<path d="M2.5 8.5l3.5 3.5 7.5-8"/>',
+  left:'<path d="M10 3L5 8l5 5"/>', down:'<path d="M3 6l5 5 5-5"/>', menu:'<path d="M2 4h12M2 8h12M2 12h12"/>',
+  gift:'<path d="M2 6h12v3H2zM3 9h10v5H3zM8 6v8M8 6C6 3 3.5 4 5 6M8 6c2-3 4.5-2 3 0"/>', star:'<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"/>',
+  truck:'<path d="M1 4h9v7H1zM10 7h3l2 2v2h-5zM4 13.5a1.3 1.3 0 100-.01M12 13.5a1.3 1.3 0 100-.01"/>', alert:'<circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4M8 10.8v.4"/>',
+  lock:'<rect x="3" y="7" width="10" height="7"/><path d="M5 7V5a3 3 0 016 0v2"/>', info:'<circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 4.8v.4"/>',
+  bag:'<path d="M3 5h10l-1 9H4zM6 5V4a2 2 0 014 0v1"/>', store:'<path d="M2 6l1-3h10l1 3M2 6h12v1a2 2 0 01-4 0 2 2 0 01-4 0 2 2 0 01-4 0zM3 9v5h10V9M6.5 14v-3h3v3"/>'
+};
+const svg = (n, cls="ic") => `<svg class="${cls}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" aria-hidden="true">${ic[n]}</svg>`;
+const money = n => "$" + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+const money0 = n => "$" + Math.round(n);
+
+/* ---------- state ---------- */
+const fresh = () => ({
+  size:3, items:[], lastAdded:null,
+  cart:{bundle:false, singles:[]},
+  pdpOption:"10 ml",
+  form:{email:"ava.chen@email.com", news:true, delivery:"ship", country:"Canada", first:"Ava", last:"Chen", address:"120 Ossington Ave", city:"Toronto", province:"Ontario", postal:"M6J 2Z5", pay:"card", card:"4242 4242 4242 424", exp:"12 / 28", cvc:"123", nameOnCard:"Ava Chen", billingSame:true},
+  payError:false, order:null
+});
+let S = fresh();
+let overlay = null; // {type:'qv', id, opt} | {type:'cart'} | {type:'warn', ...}
+
+const count = () => S.items.length;
+const subtotal = () => S.items.reduce((a,i)=>a+P[i.id].price,0);
+const pouch = () => count() >= 3;
+const tenOff = () => S.size === 4 && count() >= 4;
+const discount = () => tenOff() ? Math.round(subtotal()*10)/100 : 0;
+const bundleTotal = () => subtotal() - discount();
+const singlesTotal = () => S.cart.singles.reduce((a,s)=>a+P[s.id].price*s.qty,0);
+const inBundle = id => S.items.some(i=>i.id===id);
+const optLabel = (id,opt) => P[id].vendor ? P[id].vendor + " · " + opt : opt;
+
+/* ---------- routing ---------- */
+const ROUTES = ["product","builder","review","checkout","confirmation"];
+let route = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : "product";
+function go(r, opts={}){
+  route = r;
+  if (location.hash.slice(1) !== r) { try { history.pushState(null,"","#"+r); } catch(e){ location.hash = r; } }
+  render();
+  if (!opts.keepScroll) { const sc = $("#scroller"); sc.style.scrollBehavior="auto"; sc.scrollTop = 0; sc.style.scrollBehavior=""; }
+}
+window.addEventListener("hashchange", ()=>{ const r = location.hash.slice(1); if (ROUTES.includes(r) && r!==route){ route=r; closeOverlay(true); render(); $("#scroller").scrollTop=0; }});
+window.addEventListener("popstate", ()=>{ const r = location.hash.slice(1) || "product"; if (ROUTES.includes(r) && r!==route){ route=r; closeOverlay(true); render(); $("#scroller").scrollTop=0; }});
+
+const $ = s => document.querySelector(s);
+let toastTimer;
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2800); }
+
+/* ---------- shared pieces ---------- */
+function header(){
+  const n = (S.cart.bundle?1:0) + S.cart.singles.reduce((a,s)=>a+s.qty,0);
+  return `<div class="announce">New: the Tide Line collection &nbsp;&nbsp;·&nbsp;&nbsp; Free shipping on orders $150+</div>
+  <div class="bar">
+    <nav aria-label="Main">
+      <button type="button" data-act="nav-shop">Shop</button>
+      <button type="button" data-act="nav-builder" ${route==="builder"?'aria-current="page"':""}>Build your bundle</button>
+      <button type="button" data-act="nav-soon" data-what="Bestsellers">Bestsellers</button>
+      <button type="button" data-act="nav-soon" data-what="Journal">Journal</button>
+    </nav>
+    <button type="button" class="menu" data-act="nav-menu" aria-label="Menu">${svg("menu","ic")}</button>
+    <button type="button" class="logo" data-act="nav-shop" aria-label="Stillwater home">STILLWATER</button>
+    <div class="util">
+      <button type="button" class="wide" data-act="nav-soon" data-what="Search">Search</button>
+      <button type="button" class="wide" data-act="nav-soon" data-what="Account">Account</button>
+      <button type="button" data-act="open-cart">Cart (${n})</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- 1 · product page ---------- */
+function vProduct(){
+  const imgs = ["gallery-2","perfume-oil","gallery-3","gallery-4"];
+  const p = P["perfume-oil"];
+  return `<div class="page">${header()}
+  <main class="pad"><div class="pdp">
+    <div class="gallery">${imgs.map((g,i)=>`<img src="${IMG(g)}" alt="${i===1?"Tide Line Perfume Oil in frosted glass bottles":"Tide Line mood image"}" loading="${i<2?"eager":"lazy"}">`).join("")}</div>
+    <div class="mgallery"><div class="track" id="mtrack">${imgs.map((g,i)=>`<img src="${IMG(g)}" alt="${i===1?"Tide Line Perfume Oil in frosted glass bottles":"Tide Line mood image"}">`).join("")}</div>
+      <div class="dots">${imgs.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div></div>
+    <div class="info">
+      <p class="eyebrow" style="text-transform:none;letter-spacing:.02em">Shop / Fragrance / Tide Line Perfume Oil</p>
+      <h1 class="d40">Tide Line Perfume Oil</h1>
+      <div class="rating"><span aria-hidden="true">★★★★★</span><span class="muted">412 reviews</span><span class="sr">Rated 5 out of 5</span></div>
+      <div class="price">${money0(p.price)}</div>
+      <p class="t14 muted" style="margin:0;max-width:60ch">Our Tide Line scent as a skin-close perfume oil, poured into frosted glass and capped in black stone. Wear it on pulse points for a quiet trail of sea salt, iris and driftwood.</p>
+      <div style="display:flex;flex-direction:column;gap:8px"><p class="eyebrow">Size</p>
+        <div class="sizes" role="group" aria-label="Size">${p.options.map(o=>`<button type="button" class="chip" data-act="pdp-opt" data-opt="${o}" aria-pressed="${S.pdpOption===o}">${o}</button>`).join("")}</div></div>
+      <button type="button" class="btn solid block" data-act="pdp-add">Add to cart — ${money0(p.price)}</button>
+      <section class="promo-card" aria-labelledby="bb-h">
+        <p class="eyebrow">Build your bundle</p>
+        <h2 class="d30" id="bb-h">Pick 3, get a free Stillwater Pouch</h2>
+        <p class="t14 muted" style="margin:0">Choose any 3 for a free Stillwater Pouch. Add a 4th and take 10% off the whole bundle.</p>
+        <div class="tiers"><span class="tag">3 · Free pouch</span><span class="tag">4 · 10% off</span></div>
+        <button type="button" class="btn" data-act="nav-builder">Build your bundle</button>
+      </section>
+      <div class="acc">
+        <details><summary>Details ${svg("plus")}</summary><p>10 ml or 30 ml frosted glass bottle with a black stone cap. Made in small batches in Toronto.</p></details>
+        <details><summary>How to use ${svg("plus")}</summary><p>Press to pulse points: wrists, the base of the throat, behind the ears. Reapply after six hours.</p></details>
+        <details><summary>Ingredients ${svg("plus")}</summary><p>Fractionated coconut oil, jojoba oil, fragrance (sea salt accord, orris, driftwood), vitamin E.</p></details>
+      </div>
+    </div>
+  </div></main></div>`;
+}
+
+/* ---------- 2–4 · builder ---------- */
+function tile(id){
+  const p = P[id], added = inBundle(id);
+  return `<article class="tile">
+    <button type="button" class="imgbtn" data-act="qv" data-id="${id}" aria-label="Quick view ${p.name}">
+      <img src="${IMG(id)}" alt="" loading="lazy">${p.tag?`<span class="tag">${p.tag}</span>`:""}<span class="qv">Quick view</span>
+    </button>
+    <button type="button" class="namebtn" data-act="qv" data-id="${id}"><span class="d18">${p.tile||p.name}</span><span class="t12 muted">${p.desc}</span></button>
+    <button type="button" class="btn ${added?"added":""}" data-act="toggle" data-id="${id}" aria-pressed="${added}">${added?svg("check")+"Added to bundle":"Add to bundle - "+money0(p.price)}</button>
+  </article>`;
+}
+function rewardMsg(){
+  const c=count(), n=S.size;
+  if (n===3){
+    if (c<3) return {t:`${3-c} more to unlock your free Stillwater Pouch`, ok:false};
+    return {t:"Free Stillwater Pouch unlocked. Switch to 4 for 10% off your bundle.", ok:true};
+  }
+  if (c<3) return {t:`${3-c} more to unlock your free Stillwater Pouch`, ok:false};
+  if (c<4) return {t:"Free Stillwater Pouch unlocked. 1 more for 10% off your bundle.", ok:true};
+  return {t:"Both rewards unlocked: a free pouch and 10% off", ok:true};
+}
+function builderPanel(){
+  const n=S.size, m=rewardMsg(), full=count()>=n;
+  const slots = Array.from({length:n},(_,i)=>{
+    const it=S.items[i];
+    if (!it) return `<div class="slot"><button type="button" class="ph" data-act="pick" aria-label="Select product for slot ${i+1}">${svg("plus")}</button><span class="lbl">Select product</span></div>`;
+    const p=P[it.id];
+    return `<div class="slot filled ${S.lastAdded===it.id?"pop":""}"><div class="ph"><img src="${IMG(it.id)}" alt="${p.name}"><button type="button" class="rm" data-act="remove" data-id="${it.id}" aria-label="Remove ${p.name}">${svg("close")}</button></div><span class="lbl">${p.short}</span></div>`;
+  }).join("");
+  return `<section class="builder" id="builder-panel" aria-labelledby="b-h">
+    <div class="intro"><h1 class="d40" id="b-h">Build your bundle</h1>
+      <p>${n===3?"Customize a bundle of 3 products for a free Stillwater Pouch":"Customize a bundle of 4 products for a free Stillwater Pouch and 10% off"}</p></div>
+    <div class="sizebtns" role="group" aria-label="Bundle size">
+      <button type="button" class="btn" data-act="size" data-n="3" aria-pressed="${n===3}">3 for a free pouch</button>
+      <button type="button" class="btn" data-act="size" data-n="4" aria-pressed="${n===4}">4 for 10% off</button>
+    </div>
+    <div class="slots" style="--n:${n}">${slots}</div>
+    <div class="summary" aria-live="polite"><span class="msg ${m.ok?"ok":""}">${m.t}</span><span class="price">Total: ${money(bundleTotal())}</span></div>
+    ${full?`<button type="button" class="btn solid block" data-act="to-review">Add bundle to cart</button>`:`<button type="button" class="btn block" data-act="pick">Select more products</button>`}
+  </section>`;
+}
+function vBuilder(){
+  const m=rewardMsg(), full=count()>=S.size;
+  return `<div class="page">${header()}
+  <div class="builder-page">
+    <div class="products" id="products">
+      ${CATS.map(c=>`<section class="section" id="cat-${c.id}" aria-labelledby="h-${c.id}">
+        <div class="banner" style="background-image:url('${IMG(c.img)}')"><h2 class="d40" id="h-${c.id}">${c.name}</h2><p>${c.sub}</p></div>
+        <div class="grid">${c.items.map(tile).join("")}</div></section>`).join("")}
+    </div>
+    <aside class="side" aria-label="Your bundle">
+      ${builderPanel()}
+      <section class="promo" style="background-image:url('${IMG("banner-fragrance")}')">
+        <h2 class="d30">Not sure where to start?</h2>
+        <p>Our bestseller bundle starts with Tide Line.</p>
+        <button type="button" class="btn cream" data-act="bestseller">Shop the bestseller bundle</button>
+      </section>
+    </aside>
+  </div>
+  <div class="mobile-bar" id="mbar" aria-hidden="true">
+    <div class="mb-text"><span class="t12 ${m.ok?"ok-label":"muted"}">${count()} of ${S.size} selected</span><span class="t14 num">Total: ${money(bundleTotal())}</span></div>
+    ${full?`<button type="button" class="btn solid" data-act="to-review" tabindex="-1">Add bundle to cart</button>`:`<button type="button" class="btn" data-act="to-panel" tabindex="-1">View bundle</button>`}
+  </div></div>`;
+}
+
+/* ---------- 5 · review ---------- */
+function rewardsBar(){
+  const n=S.size, c=count(), m=rewardMsg();
+  const msg = c>=n && n===4 ? "Both rewards unlocked: a free pouch and 10% off" : m.t;
+  const tiers = Array.from({length:4},(_,i)=>{
+    if (i===2) return `<span class="${c>=3?"on":""}">${c>=3?svg("check"):""}3 · Free pouch</span>`;
+    if (i===3) return `<span class="${tenOff()?"on":""}">${tenOff()?svg("check"):""}4 · 10% off</span>`;
+    return "<span></span>";
+  }).join("");
+  return `<div class="rewards"><div class="msgrow"><span class="d21">${msg}</span><span class="eyebrow">${c} of ${n} selected</span></div>
+    <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="${c}" aria-label="Bundle progress"><i style="width:${Math.min(c,4)/4*100}%"></i></div>
+    <div class="tierrow" style="--n:4">${tiers}</div></div>`;
+}
+function sumRows(){
+  return `<div class="row"><span>Subtotal (${count()} items)</span><span>${money(subtotal())}</span></div>
+    ${tenOff()?`<div class="row muted"><span>Bundle discount (10%)</span><span>−${money(discount())}</span></div>`:""}`;
+}
+function rewardsList(){
+  if (!pouch()) return `<p class="t12 muted" style="margin:0">Add ${3-count()} more to unlock a free Stillwater Pouch.</p>`;
+  return `<p class="eyebrow ok-label">Your rewards</p>
+    <div class="rw">${svg("gift")}<span>Free Stillwater Pouch</span><span class="v">Free</span></div>
+    ${tenOff()?`<div class="rw">${svg("star")}<span>10% off your bundle</span><span class="v">−${money(discount())}</span></div>`:""}`;
+}
+function vReview(){
+  if (!count()) return `<div class="page">${header()}<main class="pad"><button type="button" class="back" data-act="nav-builder">${svg("left")}Back to builder</button>
+    <div class="empty" style="margin-top:24px;max-width:560px"><h1 class="d30">Your bundle is empty</h1><p class="t14 muted" style="margin:0">Pick 3 products to unlock a free Stillwater Pouch.</p><button type="button" class="btn solid" data-act="nav-builder">Build your bundle</button></div></main></div>`;
+  return `<div class="page">${header()}<main class="pad">
+    <button type="button" class="back" data-act="nav-builder">${svg("left")}Back to builder</button>
+    <div class="cols">
+      <section class="bundle-col"><h1 class="d40">Review your bundle</h1>${rewardsBar()}
+        <div class="lines">${S.items.map(it=>{const p=P[it.id];return `<div class="line"><img src="${IMG(it.id)}" alt="">
+          <div class="txt"><span class="d21">${p.name}</span><span class="t12 muted">${optLabel(it.id,it.opt)}</span>
+          <div class="acts"><button type="button" data-act="swap" data-id="${it.id}">Swap</button><button type="button" data-act="remove" data-id="${it.id}">Remove</button></div></div>
+          <span class="t14 num">${money(p.price)}</span></div>`;}).join("")}</div>
+      </section>
+      <aside class="sumbox" aria-label="Bundle summary"><h2 class="d21">Bundle summary</h2>${sumRows()}<div class="hair"></div>${rewardsList()}<div class="hair"></div>
+        <div class="row big"><span class="d21">Total</span><span class="price">${money(bundleTotal())}</span></div>
+        <p class="t12 muted" style="margin:0">Shipping and taxes are calculated at checkout.</p>
+        <button type="button" class="btn solid block" data-act="add-bundle">Add bundle to cart</button>
+        <button type="button" class="link" style="align-self:center" data-act="nav-builder">Edit bundle</button>
+      </aside>
+    </div></main></div>`;
+}
+
+/* ---------- 7 · checkout ---------- */
+function orderTotals(){
+  const sub = (S.cart.bundle?subtotal():0) + singlesTotal();
+  const disc = S.cart.bundle?discount():0;
+  const goods = sub - disc;
+  const ship = S.form.delivery==="pickup" || goods>=FREE_SHIP ? 0 : 12;
+  const tax = Math.round((goods+ship)*TAX*100)/100;
+  const items = (S.cart.bundle?count():0) + (S.cart.bundle&&pouch()?1:0) + S.cart.singles.reduce((a,s)=>a+s.qty,0);
+  return {sub, disc, goods, ship, tax, total: goods+ship+tax, items};
+}
+function orderSummary(editable){
+  const t=orderTotals();
+  const lines = [];
+  if (S.cart.bundle){
+    lines.push(`<div class="oline"><div class="thumb"><img src="${IMG("bundle")}" alt=""><span class="q">1</span></div>
+      <div class="t"><span class="t14" style="font-weight:500">The Stillwater bundle</span>${S.items.map(it=>`<span class="t12 muted">${P[it.id].name} · ${optLabel(it.id,it.opt)}</span>`).join("")}</div><span class="t14 num">${money(subtotal())}</span></div>`);
+    if (pouch()) lines.push(`<div class="oline"><div class="thumb"><img src="${IMG("pouch")}" alt=""><span class="q">1</span></div>
+      <div class="t"><span class="t14" style="font-weight:500">The Stillwater Pouch</span><span class="t12 muted">Gift with purchase · 3+ products</span></div><span class="t14" style="font-weight:500">Free</span></div>`);
+  }
+  S.cart.singles.forEach(s=>lines.push(`<div class="oline"><div class="thumb"><img src="${IMG(s.id)}" alt=""><span class="q">${s.qty}</span></div>
+      <div class="t"><span class="t14" style="font-weight:500">${P[s.id].name}</span><span class="t12 muted">${s.opt}</span></div><span class="t14 num">${money(P[s.id].price*s.qty)}</span></div>`));
+  return `${lines.join("")}
+    ${t.disc?`<div class="note">${svg("star")}<span>10% bundle discount applied: −${money(t.disc)}</span></div>`:""}
+    ${editable?`<form class="disc" data-form="disc"><div class="field"><label for="f-disc">Discount code or gift card</label><input id="f-disc" autocomplete="off"></div><button class="btn" id="disc-btn" type="submit">Apply</button></form>`:""}
+    <div class="totals">
+      <div class="row"><span>Subtotal · ${t.items} items</span><span>${money(t.goods)}</span></div>
+      <div class="row"><span>Shipping</span><span style="font-weight:500">${t.ship?money(t.ship):"FREE"}</span></div>
+      <div class="row"><span>Estimated taxes</span><span>${money(t.tax)}</span></div>
+    </div>
+    <div class="grand"><span class="d24">Total</span><span class="t12 muted">CAD</span><span class="price">${money(t.total)}</span></div>`;
+}
+function fld(id,label,val,opts={}){
+  const err = opts.err;
+  return `<div class="field ${err?"bad":""}" ${opts.style?`style="${opts.style}"`:""}><label for="f-${id}">${label}</label>
+    ${opts.select?`<select id="f-${id}" data-f="${id}">${opts.select.map(o=>`<option ${o===val?"selected":""}>${o}</option>`).join("")}</select><span class="chev">${svg("down")}</span>`
+      :`<input id="f-${id}" data-f="${id}" value="${val}" ${opts.type?`type="${opts.type}"`:""} ${opts.ac?`autocomplete="${opts.ac}"`:""} ${opts.im?`inputmode="${opts.im}"`:""} ${err?`aria-invalid="true" aria-describedby="e-${id}"`:""}>`}
+    ${opts.trail?`<span class="trail">${svg(opts.trail)}</span>`:""}
+    ${err?`<span class="ferr" id="e-${id}">${svg("alert")}${err}</span>`:""}</div>`;
+}
+let checkoutErrors = {};
+function vCheckout(){
+  const f=S.form, t=orderTotals(), E=checkoutErrors;
+  if (!S.cart.bundle && !S.cart.singles.length) return `<div class="page"><div class="co-head"><button type="button" class="logo" data-act="nav-shop">STILLWATER</button></div><main class="pad"><div class="empty" style="max-width:560px"><h1 class="d30">Your cart is empty</h1><button type="button" class="btn solid" data-act="nav-builder">Build your bundle</button></div></main></div>`;
+  return `<div class="page">
+  <div class="co-head"><button type="button" class="logo" data-act="nav-shop" aria-label="Stillwater home">STILLWATER</button><button type="button" data-act="open-cart" aria-label="Open cart">${svg("bag","ic")}</button></div>
+  <div class="co">
+    <form class="co-main" data-form="checkout" novalidate>
+      <section class="express" aria-label="Express checkout"><span class="t14 muted">Express checkout</span>
+        <div class="btns"><button type="button" data-act="express" style="background:var(--shop);color:var(--paper)">shop</button><button type="button" data-act="express" style="background:var(--paypal);color:var(--ink);font-style:italic">PayPal</button><button type="button" data-act="express" style="background:var(--ink);color:var(--paper);font-weight:500">G Pay</button></div></section>
+      <div class="or">OR</div>
+      <fieldset class="fs"><legend><span class="d24">Contact</span><button type="button" class="t14" data-act="nav-soon" data-what="Sign in" style="text-decoration:underline;text-underline-offset:3px">Sign in</button></legend>
+        ${fld("email","Email",f.email,{type:"email",ac:"email",err:E.email})}
+        <label class="check"><input type="checkbox" id="f-news" data-f="news" ${f.news?"checked":""}>Email me with news and offers</label>
+      </fieldset>
+      <fieldset class="fs"><legend><span class="d24">Delivery</span></legend>
+        <div class="opts" role="radiogroup" aria-label="Delivery method">
+          <label class="opt"><input type="radio" name="delivery" value="ship" data-f="delivery" ${f.delivery==="ship"?"checked":""}><span class="t"><span class="t14" style="font-weight:500">Ship</span></span>${svg("truck")}</label>
+          <label class="opt"><input type="radio" name="delivery" value="pickup" data-f="delivery" ${f.delivery==="pickup"?"checked":""}><span class="t"><span class="t14">Pick up</span><span class="t12 muted">Queen St W studio · Usually ready in 24 hours</span></span>${svg("store")}</label>
+        </div>
+        ${f.delivery==="ship"?`
+        ${fld("country","Country/Region",f.country,{select:["Canada","United States"]})}
+        <div class="frow">${fld("first","First name",f.first,{ac:"given-name",err:E.first})}${fld("last","Last name",f.last,{ac:"family-name",err:E.last})}</div>
+        ${fld("address","Address",f.address,{ac:"street-address",err:E.address})}
+        <div class="frow three">${fld("city","City",f.city,{ac:"address-level2",err:E.city})}${fld("province","Province",f.province,{select:["Alberta","British Columbia","Manitoba","Nova Scotia","Ontario","Quebec"]})}${fld("postal","Postal code",f.postal,{ac:"postal-code",err:E.postal})}</div>`:
+        `<p class="t14 muted" style="margin:0">We’ll email you when your order is ready at 1080 Queen St W, Toronto.</p>`}
+      </fieldset>
+      ${f.delivery==="ship"?`<section class="fs"><h2 class="d24">Shipping method</h2>
+        <div class="opts"><label class="opt"><input type="radio" name="shipm" checked><span class="t"><span class="t14" style="font-weight:500">Standard</span><span class="t12 muted">3 to 5 business days</span></span><span class="t14" style="font-weight:500">${t.ship?money(t.ship):"FREE"}</span></label></div></section>`:""}
+      <fieldset class="fs"><legend><span class="d24">Payment</span></legend>
+        <p class="t14 muted" style="margin:0">All transactions are secure and encrypted.</p>
+        ${S.payError?`<div class="pay-err" role="alert" tabindex="-1" id="pay-err">${svg("alert")}<div><b>Your payment details couldn’t be verified</b><p>Check your card details and try again. Your bundle and rewards are saved.</p></div></div>`:""}
+        <div class="opts" role="radiogroup" aria-label="Payment method">
+          <label class="opt"><input type="radio" name="pay" value="card" data-f="pay" ${f.pay==="card"?"checked":""}><span class="t"><span class="t14" style="font-weight:500">Credit card</span></span><span class="brands"><span class="brand">VISA</span><span class="brand">MC</span><span class="brand">AMEX</span><span class="brand">+3</span></span></label>
+          ${f.pay==="card"?`<div class="panel">
+            ${fld("card","Card number",f.card,{ac:"cc-number",im:"numeric",trail:E.card?null:"lock",err:E.card})}
+            <div class="frow">${fld("exp","Expiry (MM / YY)",f.exp,{ac:"cc-exp",im:"numeric",err:E.exp})}${fld("cvc","Security code",f.cvc,{ac:"cc-csc",im:"numeric",trail:E.cvc?null:"info",err:E.cvc})}</div>
+            ${fld("nameOnCard","Name on card",f.nameOnCard,{ac:"cc-name",err:E.nameOnCard})}
+            <label class="check"><input type="checkbox" data-f="billingSame" ${f.billingSame?"checked":""}>Use shipping address as billing address</label>
+          </div>`:""}
+          <label class="opt"><input type="radio" name="pay" value="shoppay" data-f="pay" ${f.pay==="shoppay"?"checked":""}><span class="t"><span class="t14">Shop Pay</span><span class="t12 muted">Pay in full or in installments</span></span><span class="brand" style="background:var(--shop);color:var(--paper);border-color:var(--shop)">shop</span></label>
+          <label class="opt"><input type="radio" name="pay" value="paypal" data-f="pay" ${f.pay==="paypal"?"checked":""}><span class="t"><span class="t14">PayPal</span></span><span class="brand" style="background:var(--paypal);border-color:var(--paypal)">PayPal</span></label>
+        </div>
+      </fieldset>
+      <button type="submit" class="paybtn" id="paybtn">Pay now</button>
+      <div class="policies"><button type="button" data-act="nav-soon" data-what="Policies">Refund policy</button><button type="button" data-act="nav-soon" data-what="Policies">Shipping</button><button type="button" data-act="nav-soon" data-what="Policies">Privacy policy</button><button type="button" data-act="nav-soon" data-what="Policies">Terms of service</button><button type="button" data-act="nav-soon" data-what="Contact">Contact</button></div>
+    </form>
+    <aside class="co-side" aria-label="Order summary">
+      <button type="button" class="co-mtoggle" data-act="co-toggle" aria-expanded="false" aria-controls="co-sum"><span>${svg("bag")}Show order summary${svg("down")}</span><span class="price">${money(t.total)}</span></button>
+      <div id="co-sum" data-collapsed="true">${orderSummary(true)}</div>
+    </aside>
+  </div></div>`;
+}
+
+/* ---------- 8 · confirmation ---------- */
+function vConfirmation(){
+  const o=S.order;
+  if (!o) return vCheckout();
+  const f=o.form;
+  return `<div class="page">
+  <div class="co-head"><button type="button" class="logo" data-act="restart-shop" aria-label="Stillwater home">STILLWATER</button><span>${svg("bag","ic")}</span></div>
+  <div class="co done">
+    <main class="co-main">
+      <div class="thanks"><span class="ck">${svg("check")}</span><div><p class="t14 muted" style="margin:0">Confirmation #SW1042</p><h1 class="d40" style="font-size:32px;line-height:40px">Thank you, ${f.first||"friend"}.</h1></div></div>
+      <div class="box"><h2 class="d21" style="font-size:20px">Your order is confirmed</h2><p class="t14 muted">You’ll receive a confirmation email with your order number shortly.${o.pouch?" Your free Stillwater Pouch ships in the same box.":""}</p></div>
+      ${o.bundle?`<div class="box"><h2 class="d21" style="font-size:20px">Your bundle rewards</h2>
+        ${o.pouch?`<div class="rw">${svg("gift")}<span>Free Stillwater Pouch, added to this order</span></div>`:`<p class="t14 muted">No rewards on this bundle.</p>`}
+        ${o.disc?`<div class="rw">${svg("star")}<span>10% bundle discount applied: −${money(o.disc)}</span></div>`:""}
+        <div><button type="button" class="t14" style="text-decoration:underline;text-underline-offset:3px;min-height:24px" data-act="nav-soon" data-what="My bundles">View my bundles</button></div></div>`:""}
+      <div class="box"><h2 class="d21" style="font-size:20px">Order details</h2>
+        <div class="dgrid">
+          <div><b class="t14">Contact information</b><span class="t14 muted">${f.email}</span></div>
+          <div><b class="t14">Payment method</b><span class="t14 muted">${o.payLabel} · ${money(o.total)}</span></div>
+          <div><b class="t14">${f.delivery==="ship"?"Shipping address":"Pickup location"}</b><span class="t14 muted">${f.delivery==="ship"?`${f.first} ${f.last}<br>${f.address}<br>${f.city} ${({Ontario:"ON",Quebec:"QC",Alberta:"AB","British Columbia":"BC",Manitoba:"MB","Nova Scotia":"NS"})[f.province]||""} ${f.postal}<br>${f.country}`:"Stillwater studio<br>1080 Queen St W<br>Toronto ON"}</span></div>
+          <div><b class="t14">Billing address</b><span class="t14 muted">${f.billingSame?"Same as shipping address":"Provided at payment"}</span></div>
+          <div><b class="t14">${f.delivery==="ship"?"Shipping method":"Pickup"}</b><span class="t14 muted">${f.delivery==="ship"?"Standard · 3 to 5 business days":"Usually ready in 24 hours"}</span></div>
+        </div></div>
+      <div class="factions"><span class="help t14"><span class="muted">Need help?</span> <button type="button" style="text-decoration:underline;text-underline-offset:3px" data-act="nav-soon" data-what="Contact">Contact us</button></span>
+        <button type="button" class="btn solid" style="min-height:52px" data-act="restart-shop">Continue shopping</button></div>
+    </main>
+    <aside class="co-side" aria-label="Order summary"><div style="position:static">${o.summary}</div></aside>
+  </div></div>`;
+}
+
+/* ---------- overlays ---------- */
+function quickView(id, opt){
+  const p=P[id];
+  const sel = opt || (p.soldOut ? p.options.find(o=>!p.soldOut.includes(o)) : p.options[0]);
+  const sold = p.soldOut && p.soldOut.includes(sel);
+  const added = inBundle(id);
+  return `<div class="ov qv" role="dialog" aria-modal="true" aria-labelledby="qv-h"><div class="scrim" data-act="close"></div>
+    <div class="modal"><span class="grabber" aria-hidden="true"></span>
+      <div class="mimg"><img src="${IMG(id)}" alt="${p.name}"></div>
+      <div class="mbody">
+        <div class="mhead"><div><p class="eyebrow">${p.line}</p><h2 class="d40" id="qv-h">${p.tile||p.name}</h2><span class="price">${money0(p.price)}</span></div>
+          <button type="button" class="xbtn" data-act="close" aria-label="Close quick view">${svg("close")}</button></div>
+        <p class="t14 muted" style="margin:0">${p.long}</p>
+        <div style="display:flex;flex-direction:column;gap:8px"><p class="eyebrow">${/ml|g$/.test(p.options[0])?"Size":"Finish"}</p>
+          <div class="sizes" role="group" aria-label="Option">${p.options.map(o=>`<button type="button" class="chip ${p.soldOut&&p.soldOut.includes(o)?"sold":""}" data-act="qv-opt" data-id="${id}" data-opt="${o}" aria-pressed="${o===sel}">${o}${p.soldOut&&p.soldOut.includes(o)?'<span class="sr"> (sold out)</span>':""}</button>`).join("")}</div></div>
+        ${p.stock?`<div class="stock">${svg("alert")}<span>${p.stock}</span></div>`:""}
+        ${p.alts?`<div class="alts"><p class="eyebrow">Or try these instead</p>${p.alts.map(a=>`<div class="alt"><img src="${IMG(a)}" alt=""><div class="t"><span class="t14">${P[a].name}</span><span class="t12 muted">${money0(P[a].price)}${P[a].vendor?" · "+P[a].vendor:""}</span></div><button type="button" data-act="swap-in" data-id="${a}">${inBundle(a)?"In your bundle":"Swap in"}</button></div>`).join("")}</div>`:""}
+        <button type="button" class="btn solid block" data-act="qv-add" data-id="${id}" data-opt="${sel}" ${sold?"disabled":""}>${sold?"Sold out":added?"Update bundle":"Add to bundle - "+money0(p.price)}</button>
+      </div></div></div>`;
+}
+function cartDrawer(){
+  const b=S.cart.bundle && count();
+  const n=(b?1:0)+S.cart.singles.reduce((a,s)=>a+s.qty,0);
+  const t=orderTotals();
+  const pairs = ["jade-hour","fish-comb","candle","sea-rose","hand-cream"].filter(id=>!inBundle(id)).slice(0,2);
+  const toFree = Math.max(0, FREE_SHIP - t.goods);
+  return `<div class="ov cart" role="dialog" aria-modal="true" aria-labelledby="cart-h"><div class="scrim" data-act="close"></div>
+    <div class="drawer">
+      <div class="dhead"><h2 class="d21" id="cart-h">Your cart (${n})</h2><button type="button" class="xbtn" data-act="close" aria-label="Close cart">${svg("close","ic")}</button></div>
+      ${n?`<div class="ship"><span class="msg" style="${toFree?"color:var(--muted)":""}">${svg("truck")}${toFree?`Add ${money(toFree)} more for free shipping`:"You’ve unlocked free shipping"}</span><div class="track"><i style="width:${Math.min(100,t.goods/FREE_SHIP*100)}%"></i></div></div>`:""}
+      <div class="dbody">
+        ${!n?`<div class="empty"><h3 class="d21">Your cart is empty</h3><p class="t14 muted" style="margin:0">Build a bundle of 3 for a free Stillwater Pouch.</p><button type="button" class="btn solid" data-act="nav-builder">Build your bundle</button></div>`:""}
+        ${b?`<div class="bline"><img src="${IMG("bundle")}" alt=""><div class="t"><div class="tr"><span class="d21">The Stillwater bundle</span><span class="price">${money(subtotal())}</span></div>
+          <span class="t12 muted">${count()} items · Bundle</span>
+          <div class="tiers">${pouch()?`<span class="tag ok">Free pouch</span>`:""}${tenOff()?`<span class="tag ok">10% off</span>`:""}</div></div></div>
+          <div class="bitems">${S.items.map(it=>`<div class="bitem"><img src="${IMG(it.id)}" alt=""><div class="t"><b>${P[it.id].name}</b><span class="t12 muted">${optLabel(it.id,it.opt)}</span></div><button type="button" data-act="remove" data-id="${it.id}">Remove</button></div>`).join("")}</div>
+          ${pouch()?`<div class="gwp"><img src="${IMG("pouch")}" alt=""><div class="t"><span class="t14">The Stillwater Pouch</span><span class="t12 muted">Gift with purchase · 3+ products</span></div><span class="t12">Free</span></div>`:""}
+          <button type="button" class="link" style="align-self:flex-start" data-act="nav-builder">Edit bundle</button>`:""}
+        ${S.cart.singles.map(s=>`<div class="bline"><img src="${IMG(s.id)}" alt="" style="height:88px;width:72px"><div class="t"><div class="tr"><span class="d21">${P[s.id].name}</span><span class="price">${money(P[s.id].price*s.qty)}</span></div><span class="t12 muted">${s.opt} · Qty ${s.qty}</span><button type="button" class="link" style="align-self:flex-start" data-act="remove-single" data-id="${s.id}">Remove</button></div></div>`).join("")}
+        ${b&&pairs.length?`<div class="pairs"><p class="eyebrow">Pairs well with your bundle</p><div class="cards">${pairs.map(id=>`<div class="pcard"><img src="${IMG(id)}" alt=""><div class="t"><span class="t14">${P[id].name}</span><span class="t12 muted">${money0(P[id].price)}</span><button type="button" data-act="pair-add" data-id="${id}">Add to bundle</button></div></div>`).join("")}</div></div>`:""}
+      </div>
+      ${n?`<div class="dfoot"><div class="row"><span>Subtotal</span><span>${money(t.sub)}</span></div>
+        ${t.disc?`<div class="row muted"><span>Bundle discount (10%)</span><span>−${money(t.disc)}</span></div>`:""}
+        <p class="t12 muted" style="margin:0">Taxes calculated at checkout.</p>
+        <button type="button" class="btn solid block" data-act="checkout">Check out · ${money(t.goods)}</button></div>`:""}
+    </div></div>`;
+}
+function warnDialog(w){
+  return `<div class="ov warn" role="alertdialog" aria-modal="true" aria-labelledby="w-h" aria-describedby="w-d"><div class="scrim" data-act="warn-keep"></div>
+    <div class="dialog"><div class="head">${svg("alert","ic")}<h2 class="d21" id="w-h">Remove ${P[w.id].name}?</h2><button type="button" class="xbtn" data-act="warn-keep" aria-label="Close">${svg("close")}</button></div>
+      <p class="t14 muted" style="margin:0" id="w-d">${w.text}</p>
+      <div class="tiers">${w.tags.map(t=>`<span class="tag ${t[1]}">${t[0]}</span>`).join("")}</div>
+      <div class="acts"><button type="button" class="btn" data-act="warn-remove">Remove anyway</button><button type="button" class="btn solid" data-act="warn-keep">Keep item</button></div>
+    </div></div>`;
+}
+let lastFocus=null, warnState=null;
+function openOverlay(o){ if(!overlay) lastFocus=document.activeElement; overlay=o; renderOverlay(); }
+function closeOverlay(silent){ overlay=null; warnState=null; renderOverlay(); if(!silent && lastFocus && document.contains(lastFocus)) lastFocus.focus(); }
+function renderOverlay(){
+  const host=$("#overlays");
+  let h="";
+  if (overlay){
+    if (overlay.type==="qv") h=quickView(overlay.id, overlay.opt);
+    if (overlay.type==="cart") h=cartDrawer();
+  }
+  if (warnState) h+=warnDialog(warnState);
+  host.innerHTML=h;
+  const dlg = host.querySelector(".ov:last-child .xbtn, .ov:last-child .btn.solid");
+  if (dlg) dlg.focus({preventScroll:true});
+}
+
+/* ---------- actions ---------- */
+function addItem(id, opt){
+  const p=P[id];
+  opt = opt || (p.soldOut ? p.options.find(o=>!p.soldOut.includes(o)) : p.options[0]);
+  const ex = S.items.find(i=>i.id===id);
+  if (ex){ ex.opt=opt; return "updated"; }
+  if (count()>=S.size){
+    if (S.size===3){ S.size=4; S.items.push({id,opt}); S.lastAdded=id; toast("Switched to 4 for 10% off your bundle."); return "added"; }
+    toast("Your bundle is full. Remove a product to swap one in.");
+    return "full";
+  }
+  S.items.push({id,opt}); S.lastAdded=id;
+  if (count()===3 && S.size===3) toast("Free Stillwater Pouch unlocked.");
+  if (count()===4 && S.size===4) toast("Both rewards unlocked: a free pouch and 10% off.");
+  return "added";
+}
+function rewardsAfterRemoving(){
+  const c=count()-1;
+  return {pouch:c>=3, ten:S.size===4 && c>=4};
+}
+function requestRemove(id){
+  const before={pouch:pouch(), ten:tenOff()}, after=rewardsAfterRemoving();
+  const losePouch = before.pouch && !after.pouch, loseTen = before.ten && !after.ten;
+  if (!losePouch && !loseTen){ doRemove(id); return; }
+  let text, tags=[];
+  if (losePouch && loseTen){ text="Removing this item means you’ll lose your free pouch and 10% off your bundle."; tags=[["Free pouch lost","lost"],["10% off lost","lost"]]; }
+  else if (loseTen){ text="Removing this item means you’ll lose 10% off your bundle. Your free pouch stays."; tags=[["Free pouch stays","ok"],["10% off lost","lost"]]; }
+  else { text="Removing this item means you’ll lose your free Stillwater Pouch."; tags=[["Free pouch lost","lost"]]; }
+  if (!overlay) lastFocus=document.activeElement;
+  warnState={id,text,tags}; renderOverlay();
+}
+function doRemove(id){
+  S.items = S.items.filter(i=>i.id!==id); S.lastAdded=null;
+  if (S.size===4 && count()<3) S.size=3;
+  if (!count()) S.cart.bundle=false;
+  render(true); if (overlay) renderOverlay();
+}
+function preset(n){
+  S=fresh(); overlay=null; warnState=null; checkoutErrors={};
+  const four=[["perfume-oil","10 ml"],["shell-compact","Silver"],["solid-perfume","5 g"],["body-wash","200 ml"]].map(([id,opt])=>({id,opt}));
+  if (n===1) return go("product");
+  if (n===2) return go("builder");
+  if (n===3){ S.items=[{id:"perfume-oil",opt:"10 ml"}]; go("builder"); setTimeout(()=>scrollToCat("skin",true),30); openOverlay({type:"qv",id:"shell-compact"}); return; }
+  if (n===4){ S.items=four.slice(0,3); return go("builder"); }
+  S.size=4; S.items=four;
+  if (n===5) return go("review");
+  S.cart.bundle=true;
+  if (n===6){ go("review"); openOverlay({type:"cart"}); return; }
+  if (n===7) return go("checkout");
+  if (n===8){ S.form.card="4242 4242 4242 4242"; placeOrder(); return; }
+}
+function scrollToCat(id, instant){
+  const el=$("#cat-"+id); if(!el) return;
+  const sc=$("#scroller"); if (instant) sc.style.scrollBehavior="auto";
+  sc.scrollTop = el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 16;
+  if (instant) sc.style.scrollBehavior="";
+}
+function luhn(num){ let s=0, alt=false; for(let i=num.length-1;i>=0;i--){ let d=+num[i]; if(alt){ d*=2; if(d>9) d-=9; } s+=d; alt=!alt; } return s%10===0; }
+function validate(){
+  const f=S.form, E={};
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) E.email="Enter a valid email";
+  if (f.delivery==="ship"){
+    if (!f.first.trim()) E.first="Enter a first name";
+    if (!f.last.trim()) E.last="Enter a last name";
+    if (!f.address.trim()) E.address="Enter an address";
+    if (!f.city.trim()) E.city="Enter a city";
+    if (!/^[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]\d$/.test(f.postal.trim()) && f.country==="Canada") E.postal="Enter a valid postal code";
+  }
+  if (f.pay==="card"){
+    const d=f.card.replace(/\D/g,"");
+    const amex=/^3[47]/.test(d);
+    if (d.length!==(amex?15:16) || !luhn(d)) E.card="Enter a valid card number";
+    const m=f.exp.match(/^\s*(\d{1,2})\s*\/\s*(\d{2})\s*$/); if(!m || +m[1]<1 || +m[1]>12) E.exp="Enter a valid expiry date";
+    if (!/^\d{3,4}$/.test(f.cvc.trim())) E.cvc="Enter the 3 or 4 digit code";
+    if (!f.nameOnCard.trim()) E.nameOnCard="Enter the name on the card";
+  }
+  return E;
+}
+function placeOrder(){
+  const t=orderTotals(), d=S.form.card.replace(/\D/g,"");
+  S.order={form:{...S.form}, total:t.total, disc:t.disc, bundle:S.cart.bundle, pouch:S.cart.bundle&&pouch(),
+    payLabel:S.form.pay==="card"?`Visa ending in ${d.slice(-4)}`:S.form.pay==="shoppay"?"Shop Pay":"PayPal", summary:orderSummary(false)};
+  go("confirmation");
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", e=>{
+  const el=e.target.closest("[data-act]"); if(!el) return;
+  const a=el.dataset.act, id=el.dataset.id;
+  switch(a){
+    case "nav-shop": closeOverlay(true); go("product"); break;
+    case "nav-builder": closeOverlay(true); go("builder"); break;
+    case "nav-soon": toast(`${el.dataset.what||"This page"} isn’t part of this prototype.`); break;
+    case "nav-menu": toast("Try “Build your bundle” on the product page."); break;
+    case "open-cart": openOverlay({type:"cart"}); break;
+    case "close": closeOverlay(); break;
+    case "pdp-opt": S.pdpOption=el.dataset.opt; render(true); break;
+    case "pdp-add": {
+      const ex=S.cart.singles.find(s=>s.id==="perfume-oil"&&s.opt===S.pdpOption);
+      if (ex) ex.qty++; else S.cart.singles.push({id:"perfume-oil",opt:S.pdpOption,qty:1});
+      render(true); openOverlay({type:"cart"}); break;
+    }
+    case "qv": openOverlay({type:"qv",id}); break;
+    case "qv-opt": overlay.opt=el.dataset.opt; renderOverlay(); break;
+    case "qv-add": { const r=addItem(id, el.dataset.opt); closeOverlay(); render(true); if(r!=="full") flashPanel(); break; }
+    case "swap-in": { const base=overlay&&overlay.id; const r=addItem(id); closeOverlay(); render(true); if(r!=="full"){ toast(`${P[id].name} added to your bundle.`); flashPanel(); } break; }
+    case "toggle": if (inBundle(id)) requestRemove(id); else { const r=addItem(id); render(true); if(r!=="full") flashPanel(); } break;
+    case "remove": requestRemove(id); break;
+    case "warn-remove": { const w=warnState; warnState=null; doRemove(w.id); renderOverlay(); toast(`${P[w.id].name} removed.`); break; }
+    case "warn-keep": warnState=null; renderOverlay(); break;
+    case "size": {
+      const n=+el.dataset.n;
+      if (n===3 && count()>3){ toast("Remove a product first to switch to a bundle of 3."); break; }
+      S.size=n; S.lastAdded=null; render(true); break;
+    }
+    case "pick": { const firstEmpty = CATS.find(c=>c.items.some(i=>!inBundle(i))); scrollToCat(firstEmpty?firstEmpty.id:"fragrance"); break; }
+    case "to-panel": { const el2=$("#builder-panel"); if(el2) el2.scrollIntoView({behavior:"smooth",block:"start"}); break; }
+    case "bestseller": S.items=BESTSELLER.map(([id,opt])=>({id,opt})); if(S.size===4) S.size=3; S.lastAdded=null; render(true); toast("Bestseller bundle added. Your free pouch is unlocked."); { const el2=$("#builder-panel"); if(el2) el2.scrollIntoView({behavior:"smooth",block:"start"}); } break;
+    case "to-review": go("review"); break;
+    case "swap": { const p=P[id]; go("builder"); setTimeout(()=>scrollToCat(p.cat,true),20); toast(`Pick a product to swap in for ${p.short}, then remove it.`); break; }
+    case "add-bundle": S.cart.bundle=true; render(true); openOverlay({type:"cart"}); break;
+    case "pair-add": { const r=addItem(id); render(true); renderOverlay(); if(r!=="full") toast(`${P[id].name} added to your bundle.`); break; }
+    case "remove-single": S.cart.singles=S.cart.singles.filter(s=>s.id!==id); render(true); renderOverlay(); break;
+    case "checkout": closeOverlay(true); checkoutErrors={}; S.payError=false; go("checkout"); break;
+    case "express": toast("Express checkout opens the wallet’s own window. Use the card form for this prototype."); break;
+    case "co-toggle": { const box=$("#co-sum"), open=box.dataset.collapsed!=="true"; box.dataset.collapsed=open?"true":"false"; el.setAttribute("aria-expanded",String(!open)); el.querySelector("span").firstChild.nextSibling.textContent=open?"Show order summary":"Hide order summary"; break; }
+    case "restart-shop": S=fresh(); closeOverlay(true); go("product"); break;
+  }
+});
+function flashPanel(){
+  // on mobile, nudge the sticky bar so people see the bundle changed
+  const bar=$("#mbar"); if(bar && bar.classList.contains("show")){ bar.animate([{transform:"translateY(-4px)"},{transform:"none"}],{duration:250}); }
+}
+document.addEventListener("input", e=>{
+  const k=e.target.dataset && e.target.dataset.f; if(!k) return;
+  if (e.target.type==="checkbox") S.form[k]=e.target.checked;
+  else if (e.target.type==="radio"){ S.form[k]=e.target.value; }
+  else {
+    let v=e.target.value;
+    if (k==="card"){ const d=v.replace(/\D/g,"").slice(0,16); v=d.replace(/(.{4})/g,"$1 ").trim(); if(v!==e.target.value){ const end=e.target.selectionStart===e.target.value.length; e.target.value=v; if(end) e.target.setSelectionRange(v.length,v.length);} }
+    S.form[k]=v;
+    if (checkoutErrors[k]){ delete checkoutErrors[k]; const f=e.target.closest(".field"); f.classList.remove("bad"); const er=f.querySelector(".ferr"); if(er) er.remove(); e.target.removeAttribute("aria-invalid"); }
+  }
+  if (e.target.type==="radio" || k==="country") render(true);
+  if (e.target.id==="f-disc"){ $("#disc-btn").classList.toggle("ready", !!e.target.value.trim()); }
+});
+document.addEventListener("change", e=>{ const k=e.target.dataset && e.target.dataset.f; if(k && e.target.tagName==="SELECT"){ S.form[k]=e.target.value; } });
+document.addEventListener("submit", e=>{
+  e.preventDefault();
+  const form=e.target.dataset.form;
+  if (form==="disc"){ const v=$("#f-disc").value.trim(); if(!v){ toast("Enter a discount code or gift card."); return; } toast(`“${v}” can’t be combined with your bundle rewards.`); return; }
+  if (form==="checkout"){
+    checkoutErrors=validate();
+    const btn=$("#paybtn");
+    if (Object.keys(checkoutErrors).length){
+      S.payError = !!(checkoutErrors.card||checkoutErrors.exp||checkoutErrors.cvc);
+      render(true);
+      const first=$(".field.bad input"); const pe=$("#pay-err");
+      (pe||first) && (pe||first).scrollIntoView({block:"center"});
+      if (first) first.focus({preventScroll:true});
+      return;
+    }
+    S.payError=false;
+    btn.setAttribute("aria-busy","true"); btn.textContent="Processing…";
+    setTimeout(placeOrder, 700);
+  }
+});
+document.addEventListener("keydown", e=>{
+  if (e.key==="Escape"){ if (warnState){ warnState=null; renderOverlay(); } else if (overlay) closeOverlay(); return; }
+  if (e.key==="Tab"){
+    const top=$("#overlays .ov:last-child"); if(!top) return;
+    const f=[...top.querySelectorAll("button:not([disabled]),input,select,[tabindex]:not([tabindex='-1'])")].filter(x=>x.offsetParent!==null);
+    if(!f.length) return; const first=f[0], last=f[f.length-1];
+    if (e.shiftKey && document.activeElement===first){ last.focus(); e.preventDefault(); }
+    else if (!e.shiftKey && document.activeElement===last){ first.focus(); e.preventDefault(); }
+  }
+});
+
+/* ---------- render ---------- */
+let io;
+function render(keepScroll){
+  const sc=$("#scroller"), y=sc.scrollTop;
+  const views={product:vProduct, builder:vBuilder, review:vReview, checkout:vCheckout, confirmation:vConfirmation};
+  $("#app").innerHTML=views[route]();
+  if (keepScroll){ sc.style.scrollBehavior="auto"; sc.scrollTop=y; sc.style.scrollBehavior=""; }
+  S.lastAdded=null;
+  // mobile gallery dots
+  const tr=$("#mtrack"); if(tr) tr.addEventListener("scroll",()=>{ const i=Math.round(tr.scrollLeft/tr.clientWidth); document.querySelectorAll(".dots i").forEach((d,j)=>d.classList.toggle("on",i===j)); },{passive:true});
+  // mobile sticky bundle bar
+  if (io) io.disconnect();
+  const panel=$("#builder-panel"), bar=$("#mbar");
+  if (panel && bar && "IntersectionObserver" in window){
+    io=new IntersectionObserver(([en])=>{ const show=!en.isIntersecting; bar.classList.toggle("show",show); bar.setAttribute("aria-hidden",String(!show)); bar.querySelectorAll("button").forEach(b=>b.tabIndex=show?0:-1); },{root:sc,threshold:0});
+    io.observe(panel);
+  }
+  document.title = "Stillwater Build Your Bundle";
+}
+
+/* ---------- controls ---------- */
+function setDevice(m){
+  document.body.classList.toggle("phone", m==="mobile");
+  $("#dev-desktop").setAttribute("aria-pressed",String(m!=="mobile"));
+  $("#dev-mobile").setAttribute("aria-pressed",String(m==="mobile"));
+  try{ localStorage.setItem("sw-device",m); }catch(e){}
+}
+$("#dev-desktop").addEventListener("click",()=>setDevice("desktop"));
+$("#dev-mobile").addEventListener("click",()=>setDevice("mobile"));
+$("#jump").addEventListener("change",e=>{ const v=+e.target.value; if(v){ preset(v); } e.target.value=""; });
+$("#restart").addEventListener("click",()=>preset(1));
+let dev="desktop"; try{ dev=localStorage.getItem("sw-device")||"desktop"; }catch(e){}
+setDevice(dev);
+render();
+})();
+</script>
+</body>
+</html>
