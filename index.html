@@ -92,14 +92,24 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 .logo{font-family:var(--display);font-weight:500;font-size:30px;letter-spacing:.12em;line-height:36px}
 .bar .util{display:flex;gap:28px;justify-content:flex-end}
 .bar .menu{display:none}
-@container app (max-width:760px){
-  .announce{padding:10px 16px}
-  .bar{height:52px;padding:0 16px;grid-template-columns:40px 1fr 40px}
+/* Nav collapses to a hamburger as soon as the tabs, logo and utility links stop fitting comfortably in one row. */
+@container app (max-width:1100px){
+  .bar{padding:0 32px;grid-template-columns:1fr auto 1fr}
   .bar nav,.bar .util .wide{display:none}
-  .bar .menu{display:inline-flex;min-height:40px;min-width:40px;align-items:center}
-  .logo{font-size:24px;line-height:28px;text-align:center}
+  .bar .menu{display:inline-flex;min-height:40px;min-width:40px;align-items:center;justify-self:start;margin-left:-8px;padding-left:8px}
   .bar .util{gap:0}
 }
+@container app (max-width:760px){
+  .bar{height:52px;padding:0 16px}
+  .logo{font-size:24px;line-height:28px;text-align:center}
+}
+.menu-panel{position:relative;width:360px;max-width:88%;height:100%;background:var(--paper);display:flex;flex-direction:column;animation:slidel .28s ease-out;box-shadow:12px 0 40px rgba(20,20,20,.12)}
+@keyframes slidel{from{transform:translateX(-100%)}}
+.menu-panel nav{display:flex;flex-direction:column;padding:8px 24px}
+.menu-panel nav button{display:flex;justify-content:space-between;align-items:center;text-align:left;font-family:var(--display);font-weight:500;font-size:24px;line-height:32px;padding:14px 0;border-bottom:1px solid var(--line);min-height:56px}
+.menu-panel nav button[aria-current="page"]{text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:1px}
+.menu-panel .sub{display:flex;flex-direction:column;gap:4px;padding:24px}
+.menu-panel .sub button{text-align:left;font-size:12px;line-height:16px;min-height:40px}
 
 /* ---------- page shells ---------- */
 .page{min-height:100%}
@@ -877,6 +887,24 @@ function cartDrawer(){
         <button type="button" class="btn solid block" data-act="checkout">Check out · ${money(t.goods)}</button></div>`:""}
     </div></div>`;
 }
+function menuPanel(){
+  const n = (S.cart.bundle?1:0) + S.cart.singles.reduce((a,s)=>a+s.qty,0);
+  return `<div class="ov menu" role="dialog" aria-modal="true" aria-label="Menu"><div class="scrim" data-act="close"></div>
+    <div class="menu-panel">
+      <div class="dhead"><span class="logo" style="font-size:24px;line-height:28px">STILLWATER</span><button type="button" class="xbtn" data-act="close" aria-label="Close menu">${svg("close","ic")}</button></div>
+      <nav aria-label="Main">
+        <button type="button" data-act="nav-shop" ${route==="product"?'aria-current="page"':""}>Shop</button>
+        <button type="button" data-act="nav-builder" ${route==="builder"?'aria-current="page"':""}>Build your bundle</button>
+        <button type="button" data-act="nav-soon" data-what="Bestsellers">Bestsellers</button>
+        <button type="button" data-act="nav-soon" data-what="Journal">Journal</button>
+      </nav>
+      <div class="sub">
+        <button type="button" data-act="nav-soon" data-what="Search">Search</button>
+        <button type="button" data-act="nav-soon" data-what="Account">Account</button>
+        <button type="button" data-act="open-cart">Cart (${n})</button>
+      </div>
+    </div></div>`;
+}
 function warnDialog(w){
   return `<div class="ov warn" role="alertdialog" aria-modal="true" aria-labelledby="w-h" aria-describedby="w-d"><div class="scrim" data-act="warn-keep"></div>
     <div class="dialog"><div class="head">${svg("alert","ic")}<h2 class="d21" id="w-h">Remove ${P[w.id].name}?</h2><button type="button" class="xbtn" data-act="warn-keep" aria-label="Close">${svg("close")}</button></div>
@@ -894,6 +922,7 @@ function renderOverlay(){
   if (overlay){
     if (overlay.type==="qv") h=quickView(overlay.id, overlay.opt);
     if (overlay.type==="cart") h=cartDrawer();
+    if (overlay.type==="menu") h=menuPanel();
   }
   if (warnState) h+=warnDialog(warnState);
   host.innerHTML=h;
@@ -985,7 +1014,7 @@ document.addEventListener("click", e=>{
     case "nav-shop": closeOverlay(true); go("product"); break;
     case "nav-builder": closeOverlay(true); go("builder"); break;
     case "nav-soon": toast(`${el.dataset.what||"This page"} isn’t part of this prototype.`); break;
-    case "nav-menu": toast("Try “Build your bundle” on the product page."); break;
+    case "nav-menu": openOverlay({type:"menu"}); break;
     case "open-cart": openOverlay({type:"cart"}); break;
     case "close": closeOverlay(); break;
     case "pdp-opt": S.pdpOption=el.dataset.opt; render(true); break;
