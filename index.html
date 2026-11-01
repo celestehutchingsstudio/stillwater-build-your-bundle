@@ -132,6 +132,53 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .menu-panel .sub{display:flex;flex-direction:column;gap:4px;padding:24px}
 .menu-panel .sub button{text-align:left;font-size:12px;line-height:16px;min-height:40px}
 
+/* ---------- store footer ---------- */
+.sfoot{background:var(--ink);color:var(--on-ink);padding:64px 48px calc(32px + var(--sab));display:flex;flex-direction:column;gap:48px}
+.sfoot button{color:inherit}
+.sf-top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:64px}
+.sf-news{display:flex;flex-direction:column;gap:12px;max-width:440px}
+.sf-h{font-family:var(--display);font-weight:500;font-size:28px;line-height:34px;margin:0}
+.sf-sub{margin:0;font-size:14px;line-height:22px;color:rgba(255,255,255,.66)}
+.sf-form{display:flex;margin-top:8px;border-bottom:1px solid rgba(255,255,255,.5)}
+.sf-form input{flex:1;min-width:0;background:transparent;border:0;color:var(--on-ink);font:inherit;font-size:14px;padding:12px 0;outline:none}
+.sf-form input::placeholder{color:rgba(255,255,255,.5)}
+.sf-form button{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;padding:12px 0 12px 16px;min-height:44px}
+.sf-form:focus-within{border-color:var(--on-ink)}
+.sf-fine{margin:0;font-size:11px;line-height:16px;color:rgba(255,255,255,.5)}
+.sf-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+.sf-col .sf-t{display:flex;justify-content:space-between;align-items:center;width:100%;font-size:11px;line-height:16px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:rgba(255,255,255,.6);cursor:default;text-align:left}
+.sf-col .sf-t .ic{display:none}
+.sf-col ul{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.sf-col li button{font-size:14px;line-height:20px;text-align:left}
+.sf-col li button:hover,.sf-legal button:hover,.sf-social button:hover{text-decoration:underline;text-underline-offset:3px}
+.sf-mid{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;padding-top:32px;border-top:1px solid rgba(255,255,255,.18)}
+.sf-studio{font-size:13px;line-height:20px;color:rgba(255,255,255,.66);margin:0}
+.sf-studio b{display:block;color:var(--on-ink);font-weight:500;margin-bottom:2px}
+.sf-social{display:flex;gap:24px;font-size:13px}
+.sf-word{font-family:var(--display);font-weight:500;font-size:clamp(48px,11cqw,152px);line-height:.9;letter-spacing:.12em;text-align:center;margin:0;color:rgba(255,255,255,.92);white-space:nowrap;overflow:hidden}
+.sf-bot{display:flex;justify-content:space-between;align-items:center;gap:16px 32px;flex-wrap:wrap;font-size:12px;line-height:16px;color:rgba(255,255,255,.6)}
+.sf-bot .sf-left{display:flex;gap:16px 24px;align-items:center;flex-wrap:wrap}
+.sf-region{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.3);padding:8px 12px;min-height:36px;color:var(--on-ink)!important}
+.sf-region .ic{width:12px;height:12px}
+.sf-legal{display:flex;gap:16px;flex-wrap:wrap}
+.sf-legal button{font-size:12px}
+.sf-pay{display:flex;gap:6px;flex-wrap:wrap}
+.sf-pay span{border:1px solid rgba(255,255,255,.3);padding:3px 7px;font-size:10px;line-height:14px;font-weight:600;letter-spacing:.04em;color:var(--on-ink)}
+@container app (max-width:1100px){.sf-top{grid-template-columns:1fr;gap:48px}.sf-news{max-width:none}}
+@container app (max-width:900px){
+  .sfoot{padding:48px 20px calc(28px + var(--sab));gap:36px}
+  .sf-h{font-size:26px;line-height:32px}
+  .sf-cols{grid-template-columns:1fr;gap:0;border-top:1px solid rgba(255,255,255,.18)}
+  .sf-col{border-bottom:1px solid rgba(255,255,255,.18)}
+  .sf-col .sf-t{min-height:56px;cursor:pointer;color:var(--on-ink);font-size:12px}
+  .sf-col .sf-t .ic{display:block;transition:transform .2s}
+  .sf-col .sf-t[aria-expanded="true"] .ic{transform:rotate(45deg)}
+  .sf-col ul{display:none;margin:0;padding:0 0 20px}
+  .sf-col .sf-t[aria-expanded="true"]+ul{display:flex}
+  .sf-mid{border-top:0;padding-top:0;flex-direction:column;align-items:flex-start}
+  .sf-bot{flex-direction:column;align-items:flex-start}
+}
+
 /* ---------- page shells ---------- */
 .page{min-height:100%}
 .pad{padding:32px 48px 48px}
@@ -642,6 +689,30 @@ function header(){
   </div>`;
 }
 
+/* ---------- store footer ---------- */
+function footer(){
+  const cols=[["Shop",["Fragrance","Skin","Accessories","Build your bundle","Gift cards"]],["Help",["Shipping and returns","Track an order","FAQ","Contact us"]],["Stillwater",["Our story","The Toronto studio","Journal","Stockists","Careers"]]];
+  return `<footer class="sfoot">
+    <div class="sf-top">
+      <div class="sf-news"><h2 class="sf-h">Letters from the studio</h2>
+        <p class="sf-sub">New scents, notes from the studio and early access to small-batch runs. About once a month.</p>
+        <form class="sf-form" data-form="news" novalidate><label class="sr" for="sf-email">Email address</label><input id="sf-email" type="email" placeholder="Email address" autocomplete="off"><button type="submit">Subscribe</button></form>
+        <p class="sf-fine">By subscribing you agree to our Privacy Policy. Unsubscribe any time.</p></div>
+      <nav class="sf-cols" aria-label="Footer">${cols.map(([h,ls],i)=>`<div class="sf-col"><button type="button" class="sf-t" data-act="sf-toggle" aria-expanded="false" aria-controls="sf-l${i}">${h}${svg("plus")}</button><ul id="sf-l${i}">${ls.map(l=>`<li><button type="button" data-act="${l==="Build your bundle"?"nav-builder":"nav-soon"}" data-what="${l}">${l}</button></li>`).join("")}</ul></div>`).join("")}</nav>
+    </div>
+    <div class="sf-mid">
+      <p class="sf-studio"><b>Studio and shop</b>1080 Queen St W, Toronto ON M6J 1H8<br>Wednesday to Sunday, 11 am to 6 pm</p>
+      <div class="sf-social">${["Instagram","Pinterest","TikTok"].map(n=>`<button type="button" data-act="nav-soon" data-what="${n}">${n}</button>`).join("")}</div>
+    </div>
+    <p class="sf-word" aria-hidden="true">STILLWATER</p>
+    <div class="sf-bot">
+      <div class="sf-left"><button type="button" class="sf-region" data-act="nav-soon" data-what="Country and currency">Canada (CAD $)${svg("down")}</button><span>© 2026 Stillwater Studio Inc.</span>
+        <div class="sf-legal">${["Privacy policy","Terms of service","Refund policy","Accessibility"].map(n=>`<button type="button" data-act="nav-soon" data-what="${n}">${n}</button>`).join("")}</div></div>
+      <div class="sf-pay" aria-label="Payment methods">${["VISA","Mastercard","AMEX","Apple Pay","Shop Pay","PayPal"].map(n=>`<span>${n}</span>`).join("")}</div>
+    </div>
+  </footer>`;
+}
+
 /* ---------- 1 · product page ---------- */
 function vProduct(){
   const imgs = ["gallery-2","perfume-oil","gallery-3","gallery-4"], mimgs = ["perfume-oil","gallery-2","gallery-3","gallery-4"];
@@ -899,6 +970,7 @@ function vConfirmation(){
         </div></div>
       <div class="factions"><span class="help t14"><span class="muted">Need help?</span> <button type="button" style="text-decoration:underline;text-underline-offset:3px" data-act="nav-soon" data-what="Contact">Contact us</button></span>
         <button type="button" class="btn solid" style="min-height:52px" data-act="restart-shop">Continue shopping</button></div>
+      <div class="policies"><button type="button" data-act="nav-soon" data-what="Policies">Refund policy</button><button type="button" data-act="nav-soon" data-what="Policies">Shipping</button><button type="button" data-act="nav-soon" data-what="Policies">Privacy policy</button><button type="button" data-act="nav-soon" data-what="Policies">Terms of service</button><button type="button" data-act="nav-soon" data-what="Contact">Contact</button></div>
     </main>
     <aside class="co-side" aria-label="Order summary">
       <button type="button" class="co-mtoggle" data-act="co-toggle" aria-expanded="false" aria-controls="co-sum"><span>Order summary${svg("down")}</span><span class="price">${money(o.total)}</span></button>
@@ -1092,6 +1164,7 @@ document.addEventListener("click", e=>{
   switch(a){
     case "nav-shop": closeOverlay(true); go("product"); break;
     case "nav-builder": closeOverlay(true); go("builder"); break;
+    case "sf-toggle": { const open=el.getAttribute("aria-expanded")==="true"; el.setAttribute("aria-expanded",String(!open)); break; }
     case "nav-soon": toast(`${el.dataset.what||"This page"} isn’t part of this prototype.`); break;
     case "nav-menu": openOverlay({type:"menu"}); break;
     case "open-cart": openOverlay({type:"cart"}); break;
@@ -1157,6 +1230,7 @@ document.addEventListener("change", e=>{ const k=e.target.dataset && e.target.da
 document.addEventListener("submit", e=>{
   e.preventDefault();
   const form=e.target.dataset.form;
+  if (form==="news"){ const v=$("#sf-email").value.trim(); if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)){ toast("Enter an email address to subscribe."); return; } $("#sf-email").value=""; toast("Thanks for subscribing. This is a prototype, so no email was sent."); return; }
   if (form==="disc"){ const v=$("#f-disc").value.trim(); if(!v){ toast("Enter a discount code or gift card."); return; } toast(`“${v}” can’t be combined with your bundle rewards.`); return; }
   if (form==="checkout"){
     checkoutErrors=validate();
@@ -1196,7 +1270,7 @@ let io;
 function render(keepScroll){
   const sc=$("#scroller"), y=sc.scrollTop;
   const views={product:vProduct, builder:vBuilder, review:vReview, checkout:vCheckout, confirmation:vConfirmation};
-  $("#app").innerHTML=views[route]();
+  $("#app").innerHTML=views[route]()+(["product","builder","review"].includes(route)?footer():"");
   if (keepScroll){ sc.style.scrollBehavior="auto"; sc.scrollTop=y; sc.style.scrollBehavior=""; }
   S.lastAdded=null;
   // mobile gallery dots
