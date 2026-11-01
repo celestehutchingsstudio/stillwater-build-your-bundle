@@ -31,6 +31,7 @@ a{color:inherit}
 :focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
 [hidden]{display:none!important}
+@container app (max-width:900px){.wide-only{display:none}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* ---------- prototype controls ---------- */
@@ -105,6 +106,10 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .logo{font-family:var(--display);font-weight:500;font-size:30px;letter-spacing:.12em;line-height:36px}
 .bar .util{display:flex;gap:28px;justify-content:flex-end}
 .bar .menu{display:none}
+.bar .icon-only{display:none;position:relative;min-width:40px;min-height:40px;align-items:center;justify-content:center}
+.bar .icon-only .ic{width:20px;height:20px}
+.bar .icon-only.bag{display:inline-flex}
+.badge{position:absolute;top:4px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--ink);color:#fff;font-size:10px;line-height:16px;font-weight:600;text-align:center}
 /* Nav collapses to a hamburger as soon as the tabs, logo and utility links stop fitting comfortably in one row. */
 @container app (max-width:1100px){
   .bar{padding:0 32px;grid-template-columns:1fr auto 1fr}
@@ -112,9 +117,12 @@ body.phone .toast.show{transform:translate(-50%,0)}
   .bar .menu{display:inline-flex;min-height:40px;min-width:40px;align-items:center;justify-self:start;margin-left:-8px;padding-left:8px}
   .bar .util{gap:0}
 }
-@container app (max-width:760px){
-  .bar{height:52px;padding:0 16px}
-  .logo{font-size:24px;line-height:28px;text-align:center}
+@container app (max-width:900px){
+  .announce{padding:8px 16px;text-transform:uppercase;letter-spacing:.12em}
+  .announce .wide-only{display:none}
+  .bar{height:56px;padding:0 16px;grid-template-columns:56px 1fr 96px}
+  .bar .icon-only{display:inline-flex}
+  .logo{font-size:23px;line-height:28px;text-align:center}
 }
 .menu-panel{position:relative;width:360px;max-width:88%;height:100%;background:var(--paper);display:flex;flex-direction:column;animation:slidel .28s ease-out;box-shadow:12px 0 40px rgba(20,20,20,.12)}
 @keyframes slidel{from{transform:translateX(-100%)}}
@@ -127,7 +135,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
 /* ---------- page shells ---------- */
 .page{min-height:100%}
 .pad{padding:32px 48px 48px}
-@container app (max-width:760px){.pad{padding:20px 20px 40px}}
+@container app (max-width:900px){.pad{padding:20px 20px 40px}}
 
 /* ---------- product page ---------- */
 .pdp{display:grid;grid-template-columns:minmax(0,760fr) minmax(0,520fr);gap:64px;align-items:start}
@@ -155,16 +163,23 @@ body.phone .toast.show{transform:translate(-50%,0)}
   .pdp{grid-template-columns:1fr;gap:24px}
   .info{position:static}
 }
-@container app (max-width:760px){
+@container app (max-width:900px){
   .pdp{margin:-20px -20px 0}
   .gallery{display:none}
   .mgallery{display:block;position:relative}
-  .mgallery .track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
-  .mgallery .track::-webkit-scrollbar{display:none}
-  .mgallery img{flex:none;width:100%;aspect-ratio:390/440;object-fit:cover;scroll-snap-align:start}
-  .dots{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:8px}
-  .dots i{width:4px;height:4px;background:rgba(255,255,255,.6);display:block;transition:width .2s}
-  .dots i.on{width:16px;background:#fff}
+  .mgallery .gtrack{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .mgallery .gtrack::-webkit-scrollbar{display:none}
+  .mgallery .gtrack{aspect-ratio:390/440;width:100%;max-height:600px}
+  .mgallery img{flex:none;width:100%;height:100%;max-width:none;object-fit:cover;scroll-snap-align:start}
+  .dots{position:absolute;left:20px;bottom:16px;display:flex;gap:8px;align-items:center}
+  .dots i{width:4px;height:3px;background:rgba(255,255,255,.7);display:block;transition:width .2s,background .2s}
+  .dots i.on{width:16px;background:var(--ink)}
+  .crumb{text-transform:uppercase!important;letter-spacing:.1em!important}
+  .rating .rev{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+  .info .chip{min-height:40px;padding:10px 20px;min-width:80px;text-transform:uppercase;letter-spacing:.1em}
+  .promo-card .tiers{gap:24px;padding:0 8px}
+  .promo-card .tiers .tag{background:none;padding:4px 0;letter-spacing:.1em;text-transform:uppercase}
+  .acc summary{text-transform:uppercase;letter-spacing:.1em}
   .info{padding:4px 20px 0;gap:16px}
   .info .d40{font-size:30px;line-height:36px}
   .info .btn.block{width:100%}
@@ -230,7 +245,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
   .builder-page{grid-template-columns:minmax(0,1fr) 340px}
   .slots{gap:12px}
 }
-@container app (max-width:760px){
+@container app (max-width:900px){
   .builder-page{display:flex;flex-direction:column-reverse;padding:0;gap:0}
   .side{position:static;padding:32px 16px;gap:24px}
   .builder .intro p{font-size:14px;line-height:20px}
@@ -248,7 +263,9 @@ body.phone .toast.show{transform:translate(-50%,0)}
   .tile .imgbtn .qv{display:none}
   .promo{padding:28px 16px}
   .promo .d30{font-size:30px}
+  .promo{gap:12px}
   .promo p{font-size:14px;line-height:20px}
+  .promo .promo-btn{background:none;border:0;color:#fff;min-height:24px;padding:0;font-size:14px;line-height:20px;letter-spacing:0;text-transform:none;text-decoration:underline;text-underline-offset:3px}
   .mobile-bar{position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 16px calc(12px + var(--sab));background:var(--paper);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .25s}
   .mobile-bar.show{transform:none}
   .mobile-bar .mb-text{flex:1;min-width:0;display:flex;flex-direction:column}
@@ -284,7 +301,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .center{text-align:center}
 .empty{border:1px dashed var(--line);padding:32px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 @container app (max-width:900px){.cols{grid-template-columns:1fr;gap:32px}.sumbox{position:static}}
-@container app (max-width:760px){.cols{margin-top:20px}.sumbox{padding:20px}.tierrow{display:flex;justify-content:flex-end;gap:16px}.tierrow span:empty{display:none}}
+@container app (max-width:900px){.cols{margin-top:20px}.sumbox{padding:20px}.tierrow{display:flex;justify-content:flex-end;gap:16px}.tierrow span:empty{display:none}}
 
 /* ---------- overlays ---------- */
 .ov{position:fixed;inset:0;z-index:50;display:flex}
@@ -308,7 +325,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .alt .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .alt button{font-size:12px;line-height:16px;text-decoration:underline;text-underline-offset:3px;min-height:32px}
 .grabber{display:none}
-@container app (max-width:760px){
+@container app (max-width:900px){
   .ov.qv{align-items:flex-end}
   .modal{width:100%;max-height:calc(100% - 84px);margin:0;grid-template-columns:1fr;overflow-y:auto;animation:sheet .28s ease-out;padding:12px 20px calc(32px + var(--sab))}
   .grabber{display:block;width:40px;height:4px;background:var(--line);margin:0 auto 12px}
@@ -338,10 +355,9 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .gwp{border:1px solid var(--line);display:flex;gap:12px;align-items:center;padding:12px 16px}
 .gwp img{width:48px;height:48px;object-fit:cover}
 .gwp .t{flex:1;display:flex;flex-direction:column}
-.offer{background:var(--sand);display:flex;gap:16px;padding:16px;margin-bottom:4px}
-.offer-img{width:72px;height:88px;object-fit:cover;flex:none}
-.offer-body{display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0}
-.offer .link{margin-top:4px}
+.offer{background:var(--sand);display:flex;flex-direction:column;margin-top:auto;flex:none}
+.offer-img{height:96px;background:var(--muted) center/cover}
+.offer-body{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .offer .tiers .tag{background:var(--paper)}
 .pairs{display:flex;flex-direction:column;gap:12px;padding-top:8px}
 .pairs .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -350,7 +366,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .pcard .t{display:flex;flex-direction:column;gap:4px;min-width:0;align-items:flex-start}
 .pcard button{font-size:12px;line-height:16px;text-decoration:underline;text-underline-offset:3px;min-height:24px}
 .dfoot{border-top:1px solid var(--line);padding:20px 24px calc(24px + var(--sab));display:flex;flex-direction:column;gap:12px}
-@container app (max-width:760px){
+@container app (max-width:900px){
   .drawer{width:100%;box-shadow:none}
   .dhead{padding:20px 16px}.ship{padding:16px}.dbody{padding:24px 16px}.dfoot{padding:20px 16px calc(24px + var(--sab))}
   .pairs .cards{grid-template-columns:1fr}
@@ -361,7 +377,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .dialog .head h2{flex:1}
 .dialog .acts{display:flex;gap:12px}
 .dialog .acts .btn{flex:1;padding:12px 16px}
-@container app (max-width:760px){
+@container app (max-width:900px){
   .ov.warn{align-items:flex-end}
   .dialog{width:100%;max-width:100%;margin:0;padding:24px 20px calc(32px + var(--sab));animation:sheet .25s ease-out}
   .dialog .acts{flex-direction:column-reverse}
@@ -438,11 +454,14 @@ body.phone .toast.show{transform:translate(-50%,0)}
 @container app (max-width:900px){
   .co{grid-template-columns:1fr;display:flex;flex-direction:column}
   .co-side{order:-1;border-left:0;border-bottom:1px solid var(--line);padding:0}
-  .co.done .co-side{order:1;border-bottom:0;border-top:1px solid var(--line);padding-top:24px}
   .co-side>div{position:static;max-width:none;padding:0 20px 24px}
   .co-side>div[data-collapsed="true"]{display:none}
-  .co-mtoggle{display:flex;width:100%;justify-content:space-between;align-items:center;padding:16px 20px;font-size:14px;line-height:20px;min-height:56px}
-  .co-mtoggle span:first-child{display:flex;gap:8px;align-items:center;text-decoration:underline;text-underline-offset:3px}
+  .co-mtoggle{display:flex;width:100%;justify-content:space-between;align-items:center;padding:16px;font-size:14px;line-height:20px;min-height:60px;background:var(--sand)}
+  .co-mtoggle span:first-child{display:flex;gap:8px;align-items:center}
+  .co-mtoggle[aria-expanded="true"] span:first-child .ic{transform:rotate(180deg)}
+  .co-side>div{padding:0 16px 24px}
+  .co-head{padding:16px}
+  .co-main{padding:24px 16px 40px}
   .co-main{padding:32px 20px 48px;align-items:stretch}
   .co-main>*{max-width:none}
   .co-head{padding:16px 20px}
@@ -450,7 +469,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
 @container app (max-width:520px){
   .frow.three{grid-template-columns:1fr 1fr}
   .frow.three .field:first-child{grid-column:1/-1}
-  .express .btns{grid-template-columns:1fr}
+  .express .btns{gap:8px}
 }
 
 /* ---------- confirmation ---------- */
@@ -463,7 +482,7 @@ body.phone .toast.show{transform:translate(-50%,0)}
 .dgrid b{font-weight:500}
 .factions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .factions .help{flex:1}
-@container app (max-width:520px){.dgrid{grid-template-columns:1fr}.factions .btn{width:100%}}
+@container app (max-width:520px){.dgrid{grid-template-columns:1fr}.factions{flex-direction:column;align-items:stretch}.factions .btn{width:100%}}
 </style>
 </head>
 <body>
@@ -555,6 +574,7 @@ const ic = {
   gift:'<path d="M2 6h12v3H2zM3 9h10v5H3zM8 6v8M8 6C6 3 3.5 4 5 6M8 6c2-3 4.5-2 3 0"/>', star:'<path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"/>',
   truck:'<path d="M1 4h9v7H1zM10 7h3l2 2v2h-5zM4 13.5a1.3 1.3 0 100-.01M12 13.5a1.3 1.3 0 100-.01"/>', alert:'<circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v4M8 10.8v.4"/>',
   lock:'<rect x="3" y="7" width="10" height="7"/><path d="M5 7V5a3 3 0 016 0v2"/>', info:'<circle cx="8" cy="8" r="6.5"/><path d="M8 7v4M8 4.8v.4"/>',
+  search:'<circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/>',
   bag:'<path d="M3 5h10l-1 9H4zM6 5V4a2 2 0 014 0v1"/>', store:'<path d="M2 6l1-3h10l1 3M2 6h12v1a2 2 0 01-4 0 2 2 0 01-4 0 2 2 0 01-4 0zM3 9v5h10V9M6.5 14v-3h3v3"/>'
 };
 const svg = (n, cls="ic") => `<svg class="${cls}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="square" aria-hidden="true">${ic[n]}</svg>`;
@@ -601,7 +621,7 @@ function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("sh
 /* ---------- shared pieces ---------- */
 function header(){
   const n = (S.cart.bundle?1:0) + S.cart.singles.reduce((a,s)=>a+s.qty,0);
-  return `<div class="announce">New: the Tide Line collection &nbsp;&nbsp;·&nbsp;&nbsp; Free shipping on orders $150+</div>
+  return `<div class="announce"><span class="wide-only">New: the Tide Line collection &nbsp;&nbsp;·&nbsp;&nbsp; </span>Free shipping on orders $150+</div>
   <div class="bar">
     <nav aria-label="Main">
       <button type="button" data-act="nav-shop">Shop</button>
@@ -614,32 +634,33 @@ function header(){
     <div class="util">
       <button type="button" class="wide" data-act="nav-soon" data-what="Search">Search</button>
       <button type="button" class="wide" data-act="nav-soon" data-what="Account">Account</button>
-      <button type="button" data-act="open-cart">Cart (${n})</button>
+      <button type="button" class="icon-only" data-act="nav-soon" data-what="Search" aria-label="Search">${svg("search")}</button>
+      <button type="button" class="icon-only bag" data-act="open-cart" aria-label="Cart, ${n} items">${svg("bag")}${n?`<span class="badge">${n}</span>`:""}</button>
     </div>
   </div>`;
 }
 
 /* ---------- 1 · product page ---------- */
 function vProduct(){
-  const imgs = ["gallery-2","perfume-oil","gallery-3","gallery-4"];
+  const imgs = ["gallery-2","perfume-oil","gallery-3","gallery-4"], mimgs = ["perfume-oil","gallery-2","gallery-3","gallery-4"];
   const p = P["perfume-oil"];
   return `<div class="page">${header()}
   <main class="pad"><div class="pdp">
     <div class="gallery">${imgs.map((g,i)=>`<img src="${IMG(g)}" alt="${i===1?"Tide Line Perfume Oil in frosted glass bottles":"Tide Line mood image"}" loading="${i<2?"eager":"lazy"}">`).join("")}</div>
-    <div class="mgallery"><div class="track" id="mtrack">${imgs.map((g,i)=>`<img src="${IMG(g)}" alt="${i===1?"Tide Line Perfume Oil in frosted glass bottles":"Tide Line mood image"}">`).join("")}</div>
+    <div class="mgallery"><div class="gtrack" id="mtrack">${mimgs.map((g,i)=>`<img src="${IMG(g)}" alt="${i===0?"Tide Line Perfume Oil in frosted glass bottles":"Tide Line mood image"}">`).join("")}</div>
       <div class="dots">${imgs.map((_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div></div>
     <div class="info">
-      <p class="eyebrow" style="text-transform:none;letter-spacing:.02em">Shop / Fragrance / Tide Line Perfume Oil</p>
+      <p class="eyebrow crumb" style="text-transform:none;letter-spacing:.02em">Shop / Fragrance / Tide Line Perfume Oil</p>
       <h1 class="d40">Tide Line Perfume Oil</h1>
-      <div class="rating"><span aria-hidden="true">★★★★★</span><span class="muted">412 reviews</span><span class="sr">Rated 5 out of 5</span></div>
+      <div class="rating"><span aria-hidden="true">★★★★★</span><span class="muted rev">412 reviews</span><span class="sr">Rated 5 out of 5</span></div>
       <div class="price">${money0(p.price)}</div>
-      <p class="t14 muted" style="margin:0;max-width:60ch">Our Tide Line scent as a skin-close perfume oil, poured into frosted glass and capped in black stone. Wear it on pulse points for a quiet trail of sea salt, iris and driftwood.</p>
+      <p class="t14 muted" style="margin:0;max-width:60ch">Our Tide Line scent as a skin-close perfume oil, poured into frosted glass that wears like sea glass. Sea salt, iris and driftwood, blended in small batches in our Toronto studio.</p>
       <div style="display:flex;flex-direction:column;gap:8px"><p class="eyebrow">Size</p>
         <div class="sizes" role="group" aria-label="Size">${p.options.map(o=>`<button type="button" class="chip" data-act="pdp-opt" data-opt="${o}" aria-pressed="${S.pdpOption===o}">${o}</button>`).join("")}</div></div>
       <button type="button" class="btn solid block" data-act="pdp-add">Add to cart</button>
       <section class="promo-card" aria-labelledby="bb-h">
         <p class="eyebrow">Build your bundle</p>
-        <h2 class="d30" id="bb-h">Pick 3, get a free Stillwater Pouch</h2>
+        <h2 class="d30" id="bb-h">Pick 3, get a free <span class="wide-only">Stillwater </span>pouch</h2>
         <p class="t14 muted" style="margin:0">Choose any 3 for a free Stillwater Pouch. Add a 4th and take 10% off the whole bundle.</p>
         <div class="tiers"><span class="tag">3 · Free pouch</span><span class="tag">4 · 10% off</span></div>
         <button type="button" class="btn" data-act="nav-builder">Build your bundle</button>
@@ -708,7 +729,7 @@ function vBuilder(){
       <section class="promo" style="background-image:url('${IMG("banner-fragrance")}')">
         <h2 class="d30">Not sure where to start?</h2>
         <p>Our bestseller bundle starts with Tide Line.</p>
-        <button type="button" class="btn cream" data-act="bestseller">Shop the bestseller bundle</button>
+        <button type="button" class="btn cream promo-btn" data-act="bestseller">Shop the bestseller bundle</button>
       </section>
     </aside>
   </div>
@@ -850,7 +871,7 @@ function vCheckout(){
       <div class="policies"><button type="button" data-act="nav-soon" data-what="Policies">Refund policy</button><button type="button" data-act="nav-soon" data-what="Policies">Shipping</button><button type="button" data-act="nav-soon" data-what="Policies">Privacy policy</button><button type="button" data-act="nav-soon" data-what="Policies">Terms of service</button><button type="button" data-act="nav-soon" data-what="Contact">Contact</button></div>
     </form>
     <aside class="co-side" aria-label="Order summary">
-      <button type="button" class="co-mtoggle" data-act="co-toggle" aria-expanded="false" aria-controls="co-sum"><span>${svg("bag")}Show order summary${svg("down")}</span><span class="price">${money(t.total)}</span></button>
+      <button type="button" class="co-mtoggle" data-act="co-toggle" aria-expanded="false" aria-controls="co-sum"><span>Order summary${svg("down")}</span><span class="price">${money(t.total)}</span></button>
       <div id="co-sum" data-collapsed="true">${orderSummary(true)}</div>
     </aside>
   </div></div>`;
@@ -882,7 +903,9 @@ function vConfirmation(){
       <div class="factions"><span class="help t14"><span class="muted">Need help?</span> <button type="button" style="text-decoration:underline;text-underline-offset:3px" data-act="nav-soon" data-what="Contact">Contact us</button></span>
         <button type="button" class="btn solid" style="min-height:52px" data-act="restart-shop">Continue shopping</button></div>
     </main>
-    <aside class="co-side" aria-label="Order summary"><div style="position:static">${o.summary}</div></aside>
+    <aside class="co-side" aria-label="Order summary">
+      <button type="button" class="co-mtoggle" data-act="co-toggle" aria-expanded="false" aria-controls="co-sum"><span>Order summary${svg("down")}</span><span class="price">${money(o.total)}</span></button>
+      <div id="co-sum" data-collapsed="true" style="position:static">${o.summary}</div></aside>
   </div></div>`;
 }
 
@@ -926,9 +949,10 @@ function cartDrawer(){
           ${pouch()?`<div class="gwp"><img src="${IMG("pouch")}" alt=""><div class="t"><span class="t14">The Stillwater Pouch</span><span class="t12 muted">Gift with purchase · 3+ products</span></div><span class="t12">Free</span></div>`:""}
           <button type="button" class="link" style="align-self:flex-start" data-act="nav-builder">Edit bundle</button>`:""}
         ${S.cart.singles.map(s=>`<div class="bline"><img src="${IMG(s.id)}" alt="" style="height:88px;width:72px"><div class="t"><div class="tr"><span class="d21">${P[s.id].name}</span><span class="price">${money(P[s.id].price*s.qty)}</span></div><span class="t12 muted">${s.opt} · Qty ${s.qty}</span><button type="button" class="link" style="align-self:flex-start" data-act="remove-single" data-id="${s.id}">Remove</button></div></div>`).join("")}
+        ${!b&&S.cart.singles.length?bundleOffer():""}
         ${b&&pairs.length?`<div class="pairs"><p class="eyebrow">Pairs well with your bundle</p><div class="cards">${pairs.map(id=>`<div class="pcard"><img src="${IMG(id)}" alt=""><div class="t"><span class="t14">${P[id].name}</span><span class="t12 muted">${money0(P[id].price)}</span><button type="button" data-act="pair-add" data-id="${id}">Add to bundle</button></div></div>`).join("")}</div></div>`:""}
       </div>
-      ${n?`<div class="dfoot">${!b&&S.cart.singles.length?bundleOffer():""}<div class="row"><span>Subtotal</span><span>${money(t.sub)}</span></div>
+      ${n?`<div class="dfoot"><div class="row"><span>Subtotal</span><span>${money(t.sub)}</span></div>
         ${t.disc?`<div class="row muted"><span>Bundle discount (10%)</span><span>−${money(t.disc)}</span></div>`:""}
         <p class="t12 muted" style="margin:0">Taxes calculated at checkout.</p>
         <button type="button" class="btn solid block" data-act="checkout">Check out · ${money(t.goods)}</button></div>`:""}
@@ -938,12 +962,13 @@ function bundleOffer(){
   const first=S.cart.singles[0], p=P[first.id];
   const more=Math.max(0,3-1-count());
   return `<section class="offer" aria-labelledby="offer-h">
-    <img class="offer-img" src="${IMG("pouch")}" alt="">
+    <div class="offer-img" style="background-image:url('${IMG("banner-fragrance")}')"></div>
     <div class="offer-body">
       <p class="eyebrow">Build your bundle</p>
-      <h3 class="d18" id="offer-h">Make it a bundle and get a free Stillwater Pouch</h3>
-      <p class="t12 muted" style="margin:0">Start with your ${p.short}, then pick ${more} more. Add a 4th for 10% off.</p>
-      <button type="button" class="link" data-act="single-to-bundle">Start a bundle with this</button>
+      <h3 class="d21" id="offer-h">Make it a bundle and get a free Stillwater Pouch</h3>
+      <p class="t14 muted" style="margin:0">Start with your ${p.short}, then pick ${more} more. Add a 4th and take 10% off the whole bundle.</p>
+      <div class="tiers"><span class="tag">3 · Free pouch</span><span class="tag">4 · 10% off</span></div>
+      <button type="button" class="btn block" data-act="single-to-bundle">Start a bundle with this</button>
     </div></section>`;
 }
 function menuPanel(){
@@ -1112,7 +1137,7 @@ document.addEventListener("click", e=>{
     case "remove-single": S.cart.singles=S.cart.singles.filter(s=>s.id!==id); render(true); renderOverlay(); break;
     case "checkout": closeOverlay(true); checkoutErrors={}; S.payError=false; go("checkout"); break;
     case "express": toast("Express checkout opens the wallet’s own window. Use the card form for this prototype."); break;
-    case "co-toggle": { const box=$("#co-sum"), open=box.dataset.collapsed!=="true"; box.dataset.collapsed=open?"true":"false"; el.setAttribute("aria-expanded",String(!open)); el.querySelector("span").firstChild.nextSibling.textContent=open?"Show order summary":"Hide order summary"; break; }
+    case "co-toggle": { const box=$("#co-sum"), open=box.dataset.collapsed!=="true"; box.dataset.collapsed=open?"true":"false"; el.setAttribute("aria-expanded",String(!open)); break; }
     case "restart-shop": S=fresh(); closeOverlay(true); go("product"); break;
   }
 });
