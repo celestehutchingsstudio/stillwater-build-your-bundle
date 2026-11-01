@@ -325,9 +325,10 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 .gwp{border:1px solid var(--line);display:flex;gap:12px;align-items:center;padding:12px 16px}
 .gwp img{width:48px;height:48px;object-fit:cover}
 .gwp .t{flex:1;display:flex;flex-direction:column}
-.offer{background:var(--sand);display:flex;flex-direction:column}
-.offer-img{height:96px;background:var(--muted) center/cover}
-.offer-body{padding:20px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.offer{background:var(--sand);display:flex;gap:16px;padding:16px;margin-bottom:4px}
+.offer-img{width:72px;height:88px;object-fit:cover;flex:none}
+.offer-body{display:flex;flex-direction:column;gap:4px;align-items:flex-start;min-width:0}
+.offer .link{margin-top:4px}
 .offer .tiers .tag{background:var(--paper)}
 .pairs{display:flex;flex-direction:column;gap:12px;padding-top:8px}
 .pairs .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -903,10 +904,9 @@ function cartDrawer(){
           ${pouch()?`<div class="gwp"><img src="${IMG("pouch")}" alt=""><div class="t"><span class="t14">The Stillwater Pouch</span><span class="t12 muted">Gift with purchase · 3+ products</span></div><span class="t12">Free</span></div>`:""}
           <button type="button" class="link" style="align-self:flex-start" data-act="nav-builder">Edit bundle</button>`:""}
         ${S.cart.singles.map(s=>`<div class="bline"><img src="${IMG(s.id)}" alt="" style="height:88px;width:72px"><div class="t"><div class="tr"><span class="d21">${P[s.id].name}</span><span class="price">${money(P[s.id].price*s.qty)}</span></div><span class="t12 muted">${s.opt} · Qty ${s.qty}</span><button type="button" class="link" style="align-self:flex-start" data-act="remove-single" data-id="${s.id}">Remove</button></div></div>`).join("")}
-        ${!b&&S.cart.singles.length?bundleOffer():""}
         ${b&&pairs.length?`<div class="pairs"><p class="eyebrow">Pairs well with your bundle</p><div class="cards">${pairs.map(id=>`<div class="pcard"><img src="${IMG(id)}" alt=""><div class="t"><span class="t14">${P[id].name}</span><span class="t12 muted">${money0(P[id].price)}</span><button type="button" data-act="pair-add" data-id="${id}">Add to bundle</button></div></div>`).join("")}</div></div>`:""}
       </div>
-      ${n?`<div class="dfoot"><div class="row"><span>Subtotal</span><span>${money(t.sub)}</span></div>
+      ${n?`<div class="dfoot">${!b&&S.cart.singles.length?bundleOffer():""}<div class="row"><span>Subtotal</span><span>${money(t.sub)}</span></div>
         ${t.disc?`<div class="row muted"><span>Bundle discount (10%)</span><span>−${money(t.disc)}</span></div>`:""}
         <p class="t12 muted" style="margin:0">Taxes calculated at checkout.</p>
         <button type="button" class="btn solid block" data-act="checkout">Check out · ${money(t.goods)}</button></div>`:""}
@@ -916,13 +916,12 @@ function bundleOffer(){
   const first=S.cart.singles[0], p=P[first.id];
   const more=Math.max(0,3-1-count());
   return `<section class="offer" aria-labelledby="offer-h">
-    <div class="offer-img" style="background-image:url('${IMG("banner-fragrance")}')"></div>
+    <img class="offer-img" src="${IMG("pouch")}" alt="">
     <div class="offer-body">
       <p class="eyebrow">Build your bundle</p>
-      <h3 class="d21" id="offer-h">Make it a bundle and get a free Stillwater Pouch</h3>
-      <p class="t14 muted" style="margin:0">Start with your ${p.short}, then pick ${more} more. Add a 4th and take 10% off the whole bundle.</p>
-      <div class="tiers"><span class="tag">3 · Free pouch</span><span class="tag">4 · 10% off</span></div>
-      <button type="button" class="btn block" data-act="single-to-bundle">Start a bundle with this</button>
+      <h3 class="d18" id="offer-h">Make it a bundle and get a free Stillwater Pouch</h3>
+      <p class="t12 muted" style="margin:0">Start with your ${p.short}, then pick ${more} more. Add a 4th for 10% off.</p>
+      <button type="button" class="link" data-act="single-to-bundle">Start a bundle with this</button>
     </div></section>`;
 }
 function menuPanel(){
