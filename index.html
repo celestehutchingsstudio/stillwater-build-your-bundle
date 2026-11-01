@@ -361,6 +361,7 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 .field .chev{position:absolute;right:12px;top:18px;pointer-events:none}
 .field .trail{position:absolute;right:12px;top:18px;color:var(--muted)}
 .field input:focus,.field select:focus{outline:none;border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.field input.ro{background:var(--sand);color:var(--muted);cursor:not-allowed}
 .field.bad input{border-color:var(--rust);box-shadow:0 0 0 1px var(--rust)}
 .ferr{display:flex;gap:8px;align-items:center;font-size:12px;line-height:20px;color:var(--rust)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -509,8 +510,8 @@ const fresh = () => ({
   size:3, items:[], lastAdded:null,
   cart:{bundle:false, singles:[]},
   pdpOption:"10 ml",
-  form:{email:"ava.chen@email.com", news:true, delivery:"ship", country:"Canada", first:"Ava", last:"Chen", address:"120 Ossington Ave", city:"Toronto", province:"Ontario", postal:"M6J 2Z5", pay:"card", card:"4242 4242 4242 424", exp:"12 / 28", cvc:"123", nameOnCard:"Ava Chen", billingSame:true},
-  payError:false, order:null
+  form:{email:"ava.chen@email.com", news:true, delivery:"ship", country:"Canada", first:"Ava", last:"Chen", address:"120 Ossington Ave", city:"Toronto", province:"Ontario", postal:"M6J 2Z5", pay:"card", card:"4242 4242 4242 4242", exp:"12 / 28", cvc:"123", nameOnCard:"Ava Chen", billingSame:true},
+  payError:false, payAttempts:0, order:null
 });
 let S = fresh();
 let overlay = null; // {type:'qv', id, opt} | {type:'cart'} | {type:'warn', ...}
@@ -579,7 +580,7 @@ function vProduct(){
       <p class="t14 muted" style="margin:0;max-width:60ch">Our Tide Line scent as a skin-close perfume oil, poured into frosted glass and capped in black stone. Wear it on pulse points for a quiet trail of sea salt, iris and driftwood.</p>
       <div style="display:flex;flex-direction:column;gap:8px"><p class="eyebrow">Size</p>
         <div class="sizes" role="group" aria-label="Size">${p.options.map(o=>`<button type="button" class="chip" data-act="pdp-opt" data-opt="${o}" aria-pressed="${S.pdpOption===o}">${o}</button>`).join("")}</div></div>
-      <button type="button" class="btn solid block" data-act="pdp-add">Add to cart — ${money0(p.price)}</button>
+      <button type="button" class="btn solid block" data-act="pdp-add">Add to cart</button>
       <section class="promo-card" aria-labelledby="bb-h">
         <p class="eyebrow">Build your bundle</p>
         <h2 class="d30" id="bb-h">Pick 3, get a free Stillwater Pouch</h2>
@@ -603,8 +604,8 @@ function tile(id){
     <button type="button" class="imgbtn" data-act="qv" data-id="${id}" aria-label="Quick view ${p.name}">
       <img src="${IMG(id)}" alt="" loading="lazy">${p.tag?`<span class="tag">${p.tag}</span>`:""}<span class="qv">Quick view</span>
     </button>
-    <button type="button" class="namebtn" data-act="qv" data-id="${id}"><span class="d18">${p.tile||p.name}</span><span class="t12 muted">${p.desc}</span></button>
-    <button type="button" class="btn ${added?"added":""}" data-act="toggle" data-id="${id}" aria-pressed="${added}">${added?svg("check")+"Added to bundle":"Add to bundle - "+money0(p.price)}</button>
+    <button type="button" class="namebtn" data-act="qv" data-id="${id}"><span class="d18">${p.tile||p.name}</span><span class="t14 num">${money0(p.price)}</span><span class="t12 muted">${p.desc}</span></button>
+    <button type="button" class="btn ${added?"added":""}" data-act="toggle" data-id="${id}" aria-pressed="${added}">${added?svg("check")+"Added to bundle":"Add to bundle"}</button>
   </article>`;
 }
 function rewardMsg(){
@@ -740,7 +741,7 @@ function fld(id,label,val,opts={}){
   const err = opts.err;
   return `<div class="field ${err?"bad":""}" ${opts.style?`style="${opts.style}"`:""}><label for="f-${id}">${label}</label>
     ${opts.select?`<select id="f-${id}" data-f="${id}">${opts.select.map(o=>`<option ${o===val?"selected":""}>${o}</option>`).join("")}</select><span class="chev">${svg("down")}</span>`
-      :`<input id="f-${id}" data-f="${id}" value="${val}" ${opts.type?`type="${opts.type}"`:""} ${opts.ac?`autocomplete="${opts.ac}"`:""} ${opts.im?`inputmode="${opts.im}"`:""} ${err?`aria-invalid="true" aria-describedby="e-${id}"`:""}>`}
+      :`<input id="f-${id}" data-f="${id}" value="${val}" ${opts.type?`type="${opts.type}"`:""} ${opts.ro?'readonly aria-readonly="true" tabindex="-1" class="ro"':""} ${opts.ac?`autocomplete="${opts.ac}"`:""} ${opts.im?`inputmode="${opts.im}"`:""} ${err?`aria-invalid="true" aria-describedby="e-${id}"`:""}>`}
     ${opts.trail?`<span class="trail">${svg(opts.trail)}</span>`:""}
     ${err?`<span class="ferr" id="e-${id}">${svg("alert")}${err}</span>`:""}</div>`;
 }
@@ -775,20 +776,21 @@ function vCheckout(){
         <div class="opts"><label class="opt"><input type="radio" name="shipm" checked><span class="t"><span class="t14" style="font-weight:500">Standard</span><span class="t12 muted">3 to 5 business days</span></span><span class="t14" style="font-weight:500">${t.ship?money(t.ship):"FREE"}</span></label></div></section>`:""}
       <fieldset class="fs"><legend><span class="d24">Payment</span></legend>
         <p class="t14 muted" style="margin:0">All transactions are secure and encrypted.</p>
-        ${S.payError?`<div class="pay-err" role="alert" tabindex="-1" id="pay-err">${svg("alert")}<div><b>Your payment details couldn’t be verified</b><p>Check your card details and try again. Your bundle and rewards are saved.</p></div></div>`:""}
+        ${S.payError?`<div class="pay-err" role="alert" tabindex="-1" id="pay-err">${svg("alert")}<div><b>Your payment details couldn’t be verified</b><p>Your bank declined the payment. Try again, or choose another payment method. Your bundle and rewards are saved.</p></div></div>`:""}
         <div class="opts" role="radiogroup" aria-label="Payment method">
           <label class="opt"><input type="radio" name="pay" value="card" data-f="pay" ${f.pay==="card"?"checked":""}><span class="t"><span class="t14" style="font-weight:500">Credit card</span></span><span class="brands"><span class="brand">VISA</span><span class="brand">MC</span><span class="brand">AMEX</span><span class="brand">+3</span></span></label>
           ${f.pay==="card"?`<div class="panel">
-            ${fld("card","Card number",f.card,{ac:"cc-number",im:"numeric",trail:E.card?null:"lock",err:E.card})}
-            <div class="frow">${fld("exp","Expiry (MM / YY)",f.exp,{ac:"cc-exp",im:"numeric",err:E.exp})}${fld("cvc","Security code",f.cvc,{ac:"cc-csc",im:"numeric",trail:E.cvc?null:"info",err:E.cvc})}</div>
-            ${fld("nameOnCard","Name on card",f.nameOnCard,{ac:"cc-name",err:E.nameOnCard})}
+            <p class="t12 muted" style="margin:0">Prototype only: this is a demo card, so you don’t need to enter any card details.</p>
+            ${fld("card","Card number",f.card,{ro:true,trail:"lock"})}
+            <div class="frow">${fld("exp","Expiry (MM / YY)",f.exp,{ro:true})}${fld("cvc","Security code",f.cvc,{ro:true,trail:"info"})}</div>
+            ${fld("nameOnCard","Name on card",f.nameOnCard,{ro:true})}
             <label class="check"><input type="checkbox" data-f="billingSame" ${f.billingSame?"checked":""}>Use shipping address as billing address</label>
           </div>`:""}
           <label class="opt"><input type="radio" name="pay" value="shoppay" data-f="pay" ${f.pay==="shoppay"?"checked":""}><span class="t"><span class="t14">Shop Pay</span><span class="t12 muted">Pay in full or in installments</span></span><span class="brand" style="background:var(--shop);color:var(--paper);border-color:var(--shop)">shop</span></label>
           <label class="opt"><input type="radio" name="pay" value="paypal" data-f="pay" ${f.pay==="paypal"?"checked":""}><span class="t"><span class="t14">PayPal</span></span><span class="brand" style="background:var(--paypal);border-color:var(--paypal)">PayPal</span></label>
         </div>
       </fieldset>
-      <button type="submit" class="paybtn" id="paybtn">Pay now</button>
+      <button type="submit" class="paybtn" id="paybtn">${S.payError?"Try again":"Pay now"}</button>
       <div class="policies"><button type="button" data-act="nav-soon" data-what="Policies">Refund policy</button><button type="button" data-act="nav-soon" data-what="Policies">Shipping</button><button type="button" data-act="nav-soon" data-what="Policies">Privacy policy</button><button type="button" data-act="nav-soon" data-what="Policies">Terms of service</button><button type="button" data-act="nav-soon" data-what="Contact">Contact</button></div>
     </form>
     <aside class="co-side" aria-label="Order summary">
@@ -845,7 +847,7 @@ function quickView(id, opt){
           <div class="sizes" role="group" aria-label="Option">${p.options.map(o=>`<button type="button" class="chip ${p.soldOut&&p.soldOut.includes(o)?"sold":""}" data-act="qv-opt" data-id="${id}" data-opt="${o}" aria-pressed="${o===sel}">${o}${p.soldOut&&p.soldOut.includes(o)?'<span class="sr"> (sold out)</span>':""}</button>`).join("")}</div></div>
         ${p.stock?`<div class="stock">${svg("alert")}<span>${p.stock}</span></div>`:""}
         ${p.alts?`<div class="alts"><p class="eyebrow">Or try these instead</p>${p.alts.map(a=>`<div class="alt"><img src="${IMG(a)}" alt=""><div class="t"><span class="t14">${P[a].name}</span><span class="t12 muted">${money0(P[a].price)}${P[a].vendor?" · "+P[a].vendor:""}</span></div><button type="button" data-act="swap-in" data-id="${a}">${inBundle(a)?"In your bundle":"Swap in"}</button></div>`).join("")}</div>`:""}
-        <button type="button" class="btn solid block" data-act="qv-add" data-id="${id}" data-opt="${sel}" ${sold?"disabled":""}>${sold?"Sold out":added?"Update bundle":"Add to bundle - "+money0(p.price)}</button>
+        <button type="button" class="btn solid block" data-act="qv-add" data-id="${id}" data-opt="${sel}" ${sold?"disabled":""}>${sold?"Sold out":added?"Update bundle":"Add to bundle"}</button>
       </div></div></div>`;
 }
 function cartDrawer(){
@@ -948,7 +950,7 @@ function preset(n){
   S.cart.bundle=true;
   if (n===6){ go("review"); openOverlay({type:"cart"}); return; }
   if (n===7) return go("checkout");
-  if (n===8){ S.form.card="4242 4242 4242 4242"; placeOrder(); return; }
+  if (n===8){ placeOrder(); return; }
 }
 function scrollToCat(id, instant){
   const el=$("#cat-"+id); if(!el) return;
@@ -956,7 +958,6 @@ function scrollToCat(id, instant){
   sc.scrollTop = el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 16;
   if (instant) sc.style.scrollBehavior="";
 }
-function luhn(num){ let s=0, alt=false; for(let i=num.length-1;i>=0;i--){ let d=+num[i]; if(alt){ d*=2; if(d>9) d-=9; } s+=d; alt=!alt; } return s%10===0; }
 function validate(){
   const f=S.form, E={};
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) E.email="Enter a valid email";
@@ -966,14 +967,6 @@ function validate(){
     if (!f.address.trim()) E.address="Enter an address";
     if (!f.city.trim()) E.city="Enter a city";
     if (!/^[A-Za-z]\d[A-Za-z] ?\d[A-Za-z]\d$/.test(f.postal.trim()) && f.country==="Canada") E.postal="Enter a valid postal code";
-  }
-  if (f.pay==="card"){
-    const d=f.card.replace(/\D/g,"");
-    const amex=/^3[47]/.test(d);
-    if (d.length!==(amex?15:16) || !luhn(d)) E.card="Enter a valid card number";
-    const m=f.exp.match(/^\s*(\d{1,2})\s*\/\s*(\d{2})\s*$/); if(!m || +m[1]<1 || +m[1]>12) E.exp="Enter a valid expiry date";
-    if (!/^\d{3,4}$/.test(f.cvc.trim())) E.cvc="Enter the 3 or 4 digit code";
-    if (!f.nameOnCard.trim()) E.nameOnCard="Enter the name on the card";
   }
   return E;
 }
@@ -1038,7 +1031,6 @@ document.addEventListener("input", e=>{
   else if (e.target.type==="radio"){ S.form[k]=e.target.value; }
   else {
     let v=e.target.value;
-    if (k==="card"){ const d=v.replace(/\D/g,"").slice(0,16); v=d.replace(/(.{4})/g,"$1 ").trim(); if(v!==e.target.value){ const end=e.target.selectionStart===e.target.value.length; e.target.value=v; if(end) e.target.setSelectionRange(v.length,v.length);} }
     S.form[k]=v;
     if (checkoutErrors[k]){ delete checkoutErrors[k]; const f=e.target.closest(".field"); f.classList.remove("bad"); const er=f.querySelector(".ferr"); if(er) er.remove(); e.target.removeAttribute("aria-invalid"); }
   }
@@ -1053,8 +1045,14 @@ document.addEventListener("submit", e=>{
   if (form==="checkout"){
     checkoutErrors=validate();
     const btn=$("#paybtn");
+    // Flow 1 shows a declined payment once: the first card attempt fails, the retry goes through.
+    if (!Object.keys(checkoutErrors).length && S.form.pay==="card" && S.payAttempts===0){
+      S.payAttempts++; S.payError=true; render(true);
+      const pe=$("#pay-err"); if(pe){ pe.scrollIntoView({block:"center"}); pe.focus({preventScroll:true}); }
+      const b2=$("#paybtn"); if(b2) b2.textContent="Try again";
+      return;
+    }
     if (Object.keys(checkoutErrors).length){
-      S.payError = !!(checkoutErrors.card||checkoutErrors.exp||checkoutErrors.cvc);
       render(true);
       const first=$(".field.bad input"); const pe=$("#pay-err");
       (pe||first) && (pe||first).scrollIntoView({block:"center"});
