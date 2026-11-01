@@ -15,6 +15,7 @@
   --paper:#f6f2ec; --sand:#ede5da; --line:#cfc3b3; --ink:#141414; --muted:#6e655c; --moss:#3f5a45; --rust:#9a3b2e;
   --on-ink:#ffffff; --scrim:rgba(20,20,20,.48); --shell:#e4ddd2; --shell-fg:#141414; --ring:#3f5a45;
   --shop:#5a31f4; --paypal:#ffc439;
+  --sab:env(safe-area-inset-bottom,0px);
   --display:"Cormorant Garamond","Cormorant",Garamond,"Times New Roman",serif;
   --ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   color-scheme:light;
@@ -47,9 +48,21 @@ a{color:inherit}
 
 /* ---------- device ---------- */
 .stage{flex:1;min-height:0;display:flex;justify-content:center;align-items:stretch;overflow:hidden}
-.device{position:relative;flex:1;min-width:0;background:var(--paper);transform:translateZ(0);overflow:hidden;display:flex;container-type:inline-size;container-name:app}
-body.phone .stage{padding:20px 16px;align-items:center}
-body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);border:10px solid var(--ink);border-radius:44px;box-shadow:0 24px 60px rgba(20,20,20,.25)}
+.phone-box{flex:1;min-width:0;display:flex}
+.device{position:relative;flex:1;min-width:0;background:var(--paper);overflow:hidden;display:flex;flex-direction:column}
+.screen{position:relative;flex:1;min-height:0;display:flex;transform:translateZ(0);overflow:hidden;container-type:inline-size;container-name:app}
+.statusbar,.island,.homebar{display:none}
+/* iPhone 15 frame: 393 × 852 screen, 54px status bar, 34px home-indicator zone. Scaled to fit with --s. */
+body.phone{--sab:21px}
+body.phone .stage{padding:16px;align-items:center}
+body.phone .phone-box{flex:none;width:calc(419px * var(--s,1));height:calc(878px * var(--s,1))}
+body.phone .device{flex:none;width:419px;height:878px;transform:scale(var(--s,1));transform-origin:0 0;border:13px solid #161616;border-radius:68px;box-shadow:0 0 0 2px #4a4845,0 0 0 3px #1d1d1d,0 32px 80px rgba(20,20,20,.32)}
+body.phone .statusbar{display:flex;flex:none;height:54px;align-items:center;justify-content:space-between;padding:6px 30px 0 52px;background:var(--paper);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",sans-serif;font-weight:600;font-size:17px;letter-spacing:-.02em;color:var(--ink);position:relative;z-index:5}
+body.phone .statusbar .icons{display:flex;gap:6px;align-items:center}
+body.phone .island{display:block;position:absolute;top:11px;left:50%;transform:translateX(-50%);width:125px;height:37px;border-radius:20px;background:#000;z-index:100}
+body.phone .homebar{display:block;position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:139px;height:5px;border-radius:3px;background:var(--ink);z-index:100;pointer-events:none}
+body.phone .toast{bottom:auto;top:12px;transform:translate(-50%,-12px)}
+body.phone .toast.show{transform:translate(-50%,0)}
 .scroller{flex:1;min-width:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:smooth;overscroll-behavior:contain}
 
 /* ---------- type ---------- */
@@ -236,7 +249,7 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
   .promo{padding:28px 16px}
   .promo .d30{font-size:30px}
   .promo p{font-size:14px;line-height:20px}
-  .mobile-bar{position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--paper);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .25s}
+  .mobile-bar{position:sticky;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 16px calc(12px + var(--sab));background:var(--paper);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .25s}
   .mobile-bar.show{transform:none}
   .mobile-bar .mb-text{flex:1;min-width:0;display:flex;flex-direction:column}
   .mobile-bar .btn{min-height:44px;padding:10px 16px}
@@ -297,7 +310,7 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 .grabber{display:none}
 @container app (max-width:760px){
   .ov.qv{align-items:flex-end}
-  .modal{width:100%;max-height:calc(100% - 84px);margin:0;grid-template-columns:1fr;overflow-y:auto;animation:sheet .28s ease-out;padding:12px 20px calc(32px + env(safe-area-inset-bottom,0px))}
+  .modal{width:100%;max-height:calc(100% - 84px);margin:0;grid-template-columns:1fr;overflow-y:auto;animation:sheet .28s ease-out;padding:12px 20px calc(32px + var(--sab))}
   .grabber{display:block;width:40px;height:4px;background:var(--line);margin:0 auto 12px}
   .modal .mimg{height:240px;flex:none}
   .modal .mimg img{max-height:240px}
@@ -336,10 +349,10 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 .pcard img{width:72px;height:72px;object-fit:cover;flex:none}
 .pcard .t{display:flex;flex-direction:column;gap:4px;min-width:0;align-items:flex-start}
 .pcard button{font-size:12px;line-height:16px;text-decoration:underline;text-underline-offset:3px;min-height:24px}
-.dfoot{border-top:1px solid var(--line);padding:20px 24px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.dfoot{border-top:1px solid var(--line);padding:20px 24px calc(24px + var(--sab));display:flex;flex-direction:column;gap:12px}
 @container app (max-width:760px){
   .drawer{width:100%;box-shadow:none}
-  .dhead{padding:20px 16px}.ship{padding:16px}.dbody{padding:24px 16px}.dfoot{padding:20px 16px calc(24px + env(safe-area-inset-bottom,0px))}
+  .dhead{padding:20px 16px}.ship{padding:16px}.dbody{padding:24px 16px}.dfoot{padding:20px 16px calc(24px + var(--sab))}
   .pairs .cards{grid-template-columns:1fr}
 }
 .ov.warn{z-index:60}
@@ -350,7 +363,7 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
 .dialog .acts .btn{flex:1;padding:12px 16px}
 @container app (max-width:760px){
   .ov.warn{align-items:flex-end}
-  .dialog{width:100%;max-width:100%;margin:0;padding:24px 20px calc(32px + env(safe-area-inset-bottom,0px));animation:sheet .25s ease-out}
+  .dialog{width:100%;max-width:100%;margin:0;padding:24px 20px calc(32px + var(--sab));animation:sheet .25s ease-out}
   .dialog .acts{flex-direction:column-reverse}
 }
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;font-size:13px;line-height:20px;padding:12px 16px;max-width:calc(100% - 32px);width:max-content;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70}
@@ -458,7 +471,7 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
   <span class="ctl-name">Stillwater <span>· Build your bundle · Flow 1</span></span>
   <div class="seg" role="group" aria-label="Device">
     <button type="button" id="dev-desktop" aria-pressed="true">Desktop</button>
-    <button type="button" id="dev-mobile" aria-pressed="false">Mobile</button>
+    <button type="button" id="dev-mobile" aria-pressed="false">iPhone</button>
   </div>
   <label class="sr" for="jump">Jump to screen</label>
   <select id="jump">
@@ -475,12 +488,21 @@ body.phone .device{flex:none;width:390px;max-width:100%;height:min(844px,100%);b
   <span class="spacer"></span>
   <button type="button" class="ghost" id="restart">Restart</button>
 </header>
-<div class="stage">
-  <div class="device" id="device">
-    <div class="scroller" id="scroller"><div id="app"></div></div>
-    <div id="overlays"></div>
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  </div>
+<div class="stage" id="stage">
+  <div class="phone-box"><div class="device" id="device">
+    <div class="statusbar" aria-hidden="true"><span>9:41</span><span class="icons">
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.3c2.4 0 4.6.9 6.2 2.5l1.2-1.2C13.5 1.6 10.9.6 8 .6S2.5 1.6.6 3.6l1.2 1.2C3.4 3.2 5.6 2.3 8 2.3zm0 3.4c1.5 0 2.8.6 3.8 1.5L13 6c-1.3-1.3-3.1-2-5-2s-3.7.7-5 2l1.2 1.2c1-.9 2.3-1.5 3.8-1.5zm0 3.4c.6 0 1.1.2 1.5.6L8 11.3 6.5 9.7c.4-.4.9-.6 1.5-.6z"/></svg>
+      <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="23" height="12" rx="3.5" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="20" height="9" rx="2" fill="currentColor"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" fill="currentColor" opacity=".45"/></svg>
+    </span></div>
+    <div class="island" aria-hidden="true"></div>
+    <div class="screen">
+      <div class="scroller" id="scroller"><div id="app"></div></div>
+      <div id="overlays"></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+    <div class="homebar" aria-hidden="true"></div>
+  </div></div>
 </div>
 
 <script>
@@ -1169,8 +1191,14 @@ function render(keepScroll){
 }
 
 /* ---------- controls ---------- */
+function fitPhone(){
+  const st=$("#stage"); const s=Math.min(1,(st.clientHeight-32)/878,(st.clientWidth-32)/419);
+  document.body.style.setProperty("--s", Math.max(.4,s).toFixed(3));
+}
+window.addEventListener("resize", fitPhone);
 function setDevice(m){
   document.body.classList.toggle("phone", m==="mobile");
+  fitPhone();
   $("#dev-desktop").setAttribute("aria-pressed",String(m!=="mobile"));
   $("#dev-mobile").setAttribute("aria-pressed",String(m==="mobile"));
   try{ localStorage.setItem("sw-device",m); }catch(e){}
@@ -1179,7 +1207,10 @@ $("#dev-desktop").addEventListener("click",()=>setDevice("desktop"));
 $("#dev-mobile").addEventListener("click",()=>setDevice("mobile"));
 $("#jump").addEventListener("change",e=>{ const v=+e.target.value; if(v){ preset(v); } e.target.value=""; });
 $("#restart").addEventListener("click",()=>preset(1));
+const FORCE=document.documentElement.dataset.force;
 let dev="desktop"; try{ dev=localStorage.getItem("sw-device")||"desktop"; }catch(e){}
+if (FORCE==="iphone") dev="mobile";
+if (window.innerWidth<520) dev="desktop"; // on a real phone, show the storefront full screen instead of a phone inside a phone
 setDevice(dev);
 render();
 })();
